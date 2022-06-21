@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube
+package com.huenique.audibleyoutube.state
 
 enum class SearchWidgetState {
     OPENED,

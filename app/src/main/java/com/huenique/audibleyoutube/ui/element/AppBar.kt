@@ -1,6 +1,5 @@
-package com.huenique.audibleyoutube
+package com.huenique.audibleyoutube.ui.element
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
@@ -10,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -18,35 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
-@Composable
-fun MainScreen(mainViewModel: MainViewModel) {
-
-    val searchWidgetState by mainViewModel.searchWidgetState
-    val searchTextState by mainViewModel.searchTextState
-
-    Scaffold(
-        topBar = {
-            MainAppBar(
-                searchWidgetState = searchWidgetState,
-                searchTextState = searchTextState,
-                onTextChange = {
-                    mainViewModel.updateSearchTextState(newValue = it)
-                },
-                onCloseClicked = {
-                    mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED)
-                },
-                onSearchClicked = {
-                    AudibleYoutubeApi().searchVideo(it)
-                    // Log.d("Searched Text", it)
-                },
-                onSearchTriggered = {
-                    mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)
-                }
-            )
-        }
-    ) {}
-}
+import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
 fun MainAppBar(
