@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.huenique.audibleyoutube.state.RepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 class MainViewModel : ViewModel() {
@@ -15,11 +16,19 @@ class MainViewModel : ViewModel() {
         mutableStateOf(value = "")
     val searchTextState: State<String> = _searchTextState
 
+    private val _repositoryState: MutableState<RepositoryState> =
+        mutableStateOf(value = RepositoryState.DISPLAYED)
+    val repositoryState: State<RepositoryState> = _repositoryState
+
     fun updateSearchWidgetState(newValue: SearchWidgetState) {
         _searchWidgetState.value = newValue
     }
 
     fun updateSearchTextState(newValue: String) {
         _searchTextState.value = newValue
+    }
+
+    fun updateRepositoryState(newValue: RepositoryState) {
+        _repositoryState.value = newValue
     }
 }
