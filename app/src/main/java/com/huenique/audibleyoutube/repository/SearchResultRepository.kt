@@ -1,20 +1,20 @@
 package com.huenique.audibleyoutube.repository
 
 
-interface Repository {
-    fun findAll(): Any
-    fun update(value: Any)
+interface Repository<T> {
+    fun getAll(): T
+    fun update(value: T)
 }
 
 
-class SearchResultRepository : Repository {
-    private var result = "Default"
+class SearchResultRepository : Repository<String> {
+    private var content = "{}"
 
-    override fun findAll(): String {
-        return result
+    override fun getAll(): String {
+        return content
     }
 
-    override fun update(value: Any) {
-        result = value.toString()
+    override fun update(value: String) {
+        content = value
     }
 }

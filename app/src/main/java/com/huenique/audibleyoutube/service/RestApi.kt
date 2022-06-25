@@ -1,14 +1,12 @@
 package com.huenique.audibleyoutube.service
 
-import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.repository.SearchResultRepository
-import com.huenique.audibleyoutube.state.RepositoryState
+import com.huenique.audibleyoutube.repository.Repository
 import okhttp3.*
 import java.io.IOException
 
 
 class AudibleYoutubeApi {
-    private var querySize = 5
+    private var queryCount = 1
     private var httpClient = OkHttpClient()
 
     fun downloadVideo(query: String) {
@@ -22,9 +20,9 @@ class AudibleYoutubeApi {
         }
     }
 
-    fun searchVideo(query: String, searchResultRepository: SearchResultRepository, viewModel: MainViewModel) {
+    fun searchVideo(query: String, repository: Repository<String>, callbackFn: () -> Any) {
         val request = Request.Builder()
-            .url(search.format(query, querySize))
+            .url(search.format(query, queryCount))
             .build()
 
         httpClient.newCall(request).enqueue(object : Callback {
@@ -35,8 +33,8 @@ class AudibleYoutubeApi {
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                    searchResultRepository.update(response.body!!.string())
-                    viewModel.updateRepositoryState(newValue = RepositoryState.CHANGED)
+                    repository.update(response.body!!.string())
+                    callbackFn()
                 }
             }
         })
@@ -44,7 +42,7 @@ class AudibleYoutubeApi {
 
     companion object Url {
         private const val baseUrl = "https://audible-youtube.herokuapp.com"
-        const val search = "$baseUrl/search?query=%s&size=%d"
+        const val search = "$baseUrl/search?query=%s&count=%d"
         const val download = "$baseUrl/download?query=%s"
     }
 }

@@ -89,7 +89,7 @@ fun SearchAppBar(
             placeholder = {
                 Text(
                     modifier = Modifier.alpha(ContentAlpha.medium),
-                    text = "Search here...",
+                    text = "Search Video",
                     color = Color.White
                 )
             },

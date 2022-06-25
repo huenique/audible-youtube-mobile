@@ -22,22 +22,38 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter)
             MainAppBar(
                 searchWidgetState = searchWidgetState,
                 searchTextState = searchTextState,
-                onTextChange = {
-                    mainViewModel.updateSearchTextState(newValue = it)
-                },
+                onTextChange = { mainViewModel.updateSearchTextState(newValue = it) },
                 onCloseClicked = {
-                    mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED)
+                    mainViewModel.updateSearchWidgetState(
+                        newValue = SearchWidgetState.CLOSED
+                    )
                 },
                 onSearchClicked = {
-                    audibleYoutube.searchVideo(it, searchResultRepository, mainViewModel)
+                    mainViewModel.updateRepositoryState(newValue = RepositoryState.DISPLAYED)
+                    mainViewModel.updatePreloadState(newValue = true)
+                    audibleYoutube.searchVideo(
+                        query = it,
+                        repository = searchResultRepository,
+                        callbackFn = {
+                            mainViewModel.updateRepositoryState(
+                                newValue = RepositoryState.CHANGED
+                            )
+                        }
+                    )
                 },
                 onSearchTriggered = {
-                    mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)
+                    mainViewModel.updateSearchWidgetState(
+                        newValue = SearchWidgetState.OPENED
+                    )
                 }
             )
         },
         content = {
-            MainAppContent(repository = searchResultRepository, repositoryState)
+            MainAppContent(
+                repository = searchResultRepository,
+                repositoryState = repositoryState,
+                mainViewModel = mainViewModel
+            )
         }
     )
 }

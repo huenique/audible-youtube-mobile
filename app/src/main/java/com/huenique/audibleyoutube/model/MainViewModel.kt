@@ -20,6 +20,9 @@ class MainViewModel : ViewModel() {
         mutableStateOf(value = RepositoryState.DISPLAYED)
     val repositoryState: State<RepositoryState> = _repositoryState
 
+    private val _isLoading: MutableState<Boolean> = mutableStateOf(value = false)
+    val isLoading: State<Boolean> = _isLoading
+
     fun updateSearchWidgetState(newValue: SearchWidgetState) {
         _searchWidgetState.value = newValue
     }
@@ -30,5 +33,9 @@ class MainViewModel : ViewModel() {
 
     fun updateRepositoryState(newValue: RepositoryState) {
         _repositoryState.value = newValue
+    }
+
+    fun updatePreloadState(newValue: Boolean) {
+        _isLoading.value = newValue
     }
 }
