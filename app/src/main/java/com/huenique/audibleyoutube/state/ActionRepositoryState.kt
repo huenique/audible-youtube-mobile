@@ -1,6 +1,6 @@
 package com.huenique.audibleyoutube.state
 
-enum class SearchWidgetState {
+enum class ActionRepositoryState {
   OPENED,
   CLOSED
 }

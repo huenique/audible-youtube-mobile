@@ -27,43 +27,32 @@ fun MainAppBar(
     onSearchClicked: (String) -> Unit,
     onSearchTriggered: () -> Unit
 ) {
-    when (searchWidgetState) {
-        SearchWidgetState.CLOSED -> {
-            DefaultAppBar(
-                onSearchClicked = onSearchTriggered
-            )
-        }
-        SearchWidgetState.OPENED -> {
-            SearchAppBar(
-                text = searchTextState,
-                onTextChange = onTextChange,
-                onCloseClicked = onCloseClicked,
-                onSearchClicked = onSearchClicked
-            )
-        }
+  when (searchWidgetState) {
+    SearchWidgetState.CLOSED -> {
+      DefaultAppBar(onSearchClicked = onSearchTriggered)
     }
+    SearchWidgetState.OPENED -> {
+      SearchAppBar(
+          text = searchTextState,
+          onTextChange = onTextChange,
+          onCloseClicked = onCloseClicked,
+          onSearchClicked = onSearchClicked)
+    }
+  }
 }
 
 @Composable
 fun DefaultAppBar(onSearchClicked: () -> Unit) {
-    TopAppBar(
-        title = {
-            Text(
-                text = "Audible Youtube"
-            )
-        },
-        actions = {
-            IconButton(
-                onClick = { onSearchClicked() }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search Icon",
-                    tint = Color.White
-                )
-            }
+  TopAppBar(
+      title = { Text(text = "Audible Youtube") },
+      actions = {
+        IconButton(onClick = { onSearchClicked() }) {
+          Icon(
+              imageVector = Icons.Filled.Search,
+              contentDescription = "Search Icon",
+              tint = Color.White)
         }
-    )
+      })
 }
 
 @Composable
@@ -73,87 +62,63 @@ fun SearchAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        elevation = AppBarDefaults.TopAppBarElevation,
-        color = MaterialTheme.colors.primary
-    ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = text,
-            onValueChange = {
-                onTextChange(it)
-            },
-            placeholder = {
-                Text(
-                    modifier = Modifier.alpha(ContentAlpha.medium),
-                    text = "Search Video",
-                    color = Color.White
-                )
-            },
-            textStyle = TextStyle(
-                fontSize = MaterialTheme.typography.subtitle1.fontSize
-            ),
-            singleLine = true,
-            leadingIcon = {
-                IconButton(
-                    modifier = Modifier.alpha(ContentAlpha.medium),
-                    onClick = {}
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search Icon",
-                        tint = Color.White
-                    )
+  Surface(
+      modifier = Modifier.fillMaxWidth().height(56.dp),
+      elevation = AppBarDefaults.TopAppBarElevation,
+      color = MaterialTheme.colors.primary) {
+    TextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = text,
+        onValueChange = { onTextChange(it) },
+        placeholder = {
+          Text(
+              modifier = Modifier.alpha(ContentAlpha.medium),
+              text = "Search Video",
+              color = Color.White)
+        },
+        textStyle = TextStyle(fontSize = MaterialTheme.typography.subtitle1.fontSize),
+        singleLine = true,
+        leadingIcon = {
+          IconButton(modifier = Modifier.alpha(ContentAlpha.medium), onClick = {}) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search Icon",
+                tint = Color.White)
+          }
+        },
+        trailingIcon = {
+          IconButton(
+              onClick = {
+                if (text.isNotEmpty()) {
+                  onTextChange("")
+                } else {
+                  onCloseClicked()
                 }
-            },
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        if (text.isNotEmpty()) {
-                            onTextChange("")
-                        } else {
-                            onCloseClicked()
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close Icon",
-                        tint = Color.White
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearchClicked(text)
-                }
-            ),
-            colors = TextFieldDefaults.textFieldColors(
+              }) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close Icon",
+                tint = Color.White)
+          }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearchClicked(text) }),
+        colors =
+            TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
-                cursorColor = Color.White.copy(alpha = ContentAlpha.medium)
-            ))
-    }
+                cursorColor = Color.White.copy(alpha = ContentAlpha.medium)))
+  }
 }
 
 @Composable
 @Preview
 fun DefaultAppBarPreview() {
-    DefaultAppBar(onSearchClicked = {})
+  DefaultAppBar(onSearchClicked = {})
 }
 
 @Composable
 @Preview
 fun SearchAppBarPreview() {
-    SearchAppBar(
-        text = "Some random text",
-        onTextChange = {},
-        onCloseClicked = {},
-        onSearchClicked = {}
-    )
+  SearchAppBar(
+      text = "Some random text", onTextChange = {}, onCloseClicked = {}, onSearchClicked = {})
 }

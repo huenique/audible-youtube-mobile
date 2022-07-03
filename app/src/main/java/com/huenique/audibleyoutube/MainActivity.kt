@@ -11,25 +11,22 @@ import androidx.compose.ui.Modifier
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.ui.element.MainScreen
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
-import com.huenique.audibleyoutube.utils.RepositoryGetter
+import com.huenique.audibleyoutube.utils.RepositoryClassMethod
 
 class MainActivity : ComponentActivity() {
 
-    private val repositoryGetter: RepositoryGetter = RepositoryGetter()
-    private val mainViewModel: MainViewModel by viewModels()
+  private val repositoryClassMethod: RepositoryClassMethod = RepositoryClassMethod()
+  private val mainViewModel: MainViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            AudibleYoutubeTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    MainScreen(mainViewModel = mainViewModel, repositoryGetter = repositoryGetter)
-                }
-            }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      AudibleYoutubeTheme {
+        // A surface container using the 'background' color from the theme
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+          MainScreen(mainViewModel = mainViewModel, repositoryClassMethod = repositoryClassMethod)
         }
+      }
     }
+  }
 }
