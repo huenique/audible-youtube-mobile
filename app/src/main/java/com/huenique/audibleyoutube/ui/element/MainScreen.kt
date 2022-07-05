@@ -9,6 +9,7 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.RepositoryClassMethod
+import java.io.File
 
 @Composable
 fun MainScreen(mainViewModel: MainViewModel, repositoryClassMethod: RepositoryClassMethod) {
@@ -58,6 +59,12 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryClassMethod: RepositoryCl
             onMoreActionClicked = {
               mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
             },
-        )
+            onAddToPlaylist = { query: String, file: File ->
+              audibleYoutube.downloadVideo(query, file)
+              mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
+            },
+            onCloseDialogue = {
+              mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
+            })
       })
 }

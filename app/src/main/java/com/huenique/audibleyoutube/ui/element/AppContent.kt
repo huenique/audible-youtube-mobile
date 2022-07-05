@@ -1,8 +1,12 @@
 package com.huenique.audibleyoutube.ui.element
 
+import android.content.res.Configuration
+import android.os.Environment
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,9 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +33,7 @@ import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONObject
 
 @Composable
@@ -37,6 +45,8 @@ fun MainAppContent(
     isLoading: Boolean,
     onContentLoad: (Boolean) -> Unit,
     onMoreActionClicked: () -> Unit,
+    onAddToPlaylist: (String, File) -> Unit,
+    onCloseDialogue: () -> Unit
 ) {
   if (isLoading) PreLoader()
 
@@ -44,7 +54,7 @@ fun MainAppContent(
     SearchRepositoryState.CHANGED -> {
       onContentLoad(false)
       VariableAppContent(searchResultRepo, moreActionState, onMoreActionClicked)
-      MainDialogue(actionRepoState, moreActionState)
+      MainDialogue(actionRepoState, moreActionState, onAddToPlaylist, onCloseDialogue)
     }
     SearchRepositoryState.DISPLAYED -> {
       if (!isLoading) DefaultAppContent()
@@ -78,7 +88,7 @@ fun PreLoader() {
 fun VariableAppContent(
     searchResultRepo: SearchResultRepository,
     moreActionState: SnapshotStateMap<String, String>,
-    onMoreActionClicked: () -> Unit,
+    onMoreActionClicked: () -> Unit
 ) {
 
   Column(
@@ -107,7 +117,7 @@ fun VariableAppContent(
 fun ResultAppContent(
     json: JSONObject,
     moreActionState: SnapshotStateMap<String, String>,
-    onMoreActionClicked: () -> Unit,
+    onMoreActionClicked: () -> Unit
 ) {
 
   // For the response structure, see
@@ -125,12 +135,12 @@ fun ResultAppContent(
     val thumbnail = result.getJSONArray("thumbnails").getJSONObject(0).getString("url")
 
     Card(modifier = Modifier.fillMaxWidth().heightIn(0.dp, 100.dp).padding(top = 10.dp)) {
-      Row(modifier = Modifier.fillMaxHeight()) {
-        Box(modifier = Modifier.width(120.dp), contentAlignment = Alignment.Center) {
+      Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.width(130.dp)) {
           AsyncImage(model = thumbnail, contentDescription = null, contentScale = ContentScale.Crop)
         }
 
-        Column(modifier = Modifier.padding(start = 6.dp).width(250.dp)) {
+        Column(modifier = Modifier.padding(start = 6.dp).width(230.dp).fillMaxHeight()) {
           Text(
               videoTitle,
               fontSize = 14.sp,
@@ -149,8 +159,8 @@ fun ResultAppContent(
               onMoreActionClicked()
             }) {
           Icon(
-              Icons.Rounded.MoreVert,
-              modifier = Modifier.align(Alignment.CenterVertically).size(128.dp),
+              imageVector = Icons.Rounded.MoreVert,
+              modifier = Modifier.size(128.dp),
               contentDescription = "More Action")
         }
       }
@@ -161,42 +171,47 @@ fun ResultAppContent(
 @Composable
 fun MainDialogue(
     actionRepoState: ActionRepositoryState,
-    moreActionState: SnapshotStateMap<String, String>
+    moreActionState: SnapshotStateMap<String, String>,
+    onAddToPlaylist: (String, File) -> Unit,
+    onCloseDialogue: () -> Unit,
 ) {
   when (actionRepoState) {
-    ActionRepositoryState.OPENED -> ResultDialogue(moreActionState)
+    ActionRepositoryState.OPENED ->
+        ResultDialogue(moreActionState, onAddToPlaylist, onCloseDialogue)
     ActionRepositoryState.CLOSED -> println("Action Repo is CLOSED")
   }
 }
 
 @Composable
-fun ResultDialogue(moreActionState: SnapshotStateMap<String, String>) {
+fun ResultDialogue(
+    moreActionState: SnapshotStateMap<String, String>,
+    onAddToPlaylist: (String, File) -> Unit,
+    onCloseDialogue: () -> Unit,
+) {
   val config = LocalConfiguration.current
   val context = LocalContext.current
-  println(moreActionState["videoTitle"].toString())
-  println(moreActionState["videoLink"].toString())
-
-  //    val downloadedFile = File(context.cacheDir, moreActionState["videoTitle"].toString())
+  val fileName = "${moreActionState["videoTitle"].toString()}.mp3"
 
   Box(
       modifier =
-          Modifier.fillMaxSize().background(MaterialTheme.colors.background.copy(alpha = 0.6f)),
+          Modifier.fillMaxSize()
+              .background(MaterialTheme.colors.background.copy(alpha = 0.6f))
+              .clickable { onCloseDialogue() },
       contentAlignment = Alignment.Center) {
     Box(
-        modifier =
-            Modifier.background(MaterialTheme.colors.background).width(config.screenWidthDp.dp / 2),
+        modifier = Modifier.background(Color.DarkGray).width(config.screenWidthDp.dp / 2),
         contentAlignment = Alignment.Center) {
-      //            println(downloadedFile)
-      Text(text = "Add to Playlist", modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+      ClickableText(
+          text = AnnotatedString("Add to Playlist"),
+          modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+          style = TextStyle(color = Color.White),
+          onClick = {
+            onAddToPlaylist(
+                moreActionState["videoLink"].toString(),
+                File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), fileName))
+          })
     }
   }
-}
-
-@Preview(showBackground = true, backgroundColor = 300L)
-@Composable
-fun ResultDialoguePreview() {
-  val map = remember { mutableStateMapOf<String, String>() }
-  AudibleYoutubeTheme { ResultDialogue(map) }
 }
 
 @Preview
@@ -215,13 +230,13 @@ fun DefaultAppContentPreview() {
 @Composable
 fun ResultAppContentPreview() {
   val json =
-      """
+"""
 {
     "playlist":[
         {
             "result":[
                 {
-                    "title":"Rick Astley - Never Gonna Give You Up (Official Music Video)",
+                    "title":"Rick - Never Gonna Give You Up (Official Music Video)",
                     "viewCount":{
                         "text":"1,239,118,202 views",
                         "short":"1.2B views"
@@ -234,7 +249,7 @@ fun ResultAppContentPreview() {
                         }
                     ],
                     "channel":{
-                        "name":"Rick Astley"
+                        "name":"Rick"
                     }
                 }
             ]
@@ -242,5 +257,13 @@ fun ResultAppContentPreview() {
     ]
 }
 """
-  //    AudibleYoutubeTheme { ResultAppContent(JSONObject(json)) {} }
+  val moreActionState = remember { mutableStateMapOf<String, String>() }
+  AudibleYoutubeTheme { ResultAppContent(JSONObject(json), moreActionState) {} }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun ResultDialoguePreview() {
+  val moreActionState = remember { mutableStateMapOf<String, String>() }
+  AudibleYoutubeTheme { ResultDialogue(moreActionState, { a, b -> a + b }, {}) }
 }
