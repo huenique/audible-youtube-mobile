@@ -5,25 +5,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
-import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.utils.RepositoryClassMethod
-import java.io.File
+import com.huenique.audibleyoutube.ui.component.MainAppBar
+import com.huenique.audibleyoutube.utils.RepositoryGetter
 
 @Composable
-fun MainScreen(mainViewModel: MainViewModel, repositoryClassMethod: RepositoryClassMethod) {
+fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter) {
   val audibleYoutube = AudibleYoutubeApi()
 
-  val searchResultRepository = repositoryClassMethod.searchResultRepository()
+  val searchResultRepository = repositoryGetter.searchResultRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val searchTextState by mainViewModel.searchTextState
-  val searchRepositoryState by mainViewModel.searchRepositoryState
-
-  val moreActionState = mainViewModel.moreActionState
-  val actionRepoState by mainViewModel.actionRepositoryState
-
-  val isLoading by mainViewModel.isLoading
 
   Scaffold(
       topBar = {
@@ -39,7 +32,7 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryClassMethod: RepositoryCl
               mainViewModel.updatePreloadState(newValue = true)
               audibleYoutube.searchVideo(
                   query = it,
-                  repository = searchResultRepository,
+                  responseRepo = searchResultRepository,
                   callbackFn = {
                     mainViewModel.updateSearchRepoState(newValue = SearchRepositoryState.CHANGED)
                   })
@@ -49,22 +42,14 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryClassMethod: RepositoryCl
             })
       },
       content = {
-        MainAppContent(
-            actionRepoState = actionRepoState,
-            moreActionState = moreActionState,
-            searchResultRepoState = searchRepositoryState,
-            searchResultRepo = searchResultRepository,
-            isLoading = isLoading,
-            onContentLoad = { mainViewModel.updatePreloadState(newValue = it) },
-            onMoreActionClicked = {
-              mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
-            },
-            onAddToPlaylist = { query: String, file: File ->
-              audibleYoutube.downloadVideo(query, file)
-              mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-            },
-            onCloseDialogue = {
-              mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-            })
+        when (searchWidgetState) {
+          SearchWidgetState.OPENED -> {
+            SearchScreen(
+                mainViewModel = mainViewModel, searchResultRepository = searchResultRepository)
+          }
+          SearchWidgetState.CLOSED -> {
+            LibraryScreen()
+          }
+        }
       })
 }

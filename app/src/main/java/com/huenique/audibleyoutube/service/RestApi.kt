@@ -48,8 +48,12 @@ class AudibleYoutubeApi {
             })
   }
 
-  fun searchVideo(query: String, repository: Repository<String>, callbackFn: () -> Any) {
-    val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build()
+  fun searchVideo(
+      query: String,
+      responseRepo: Repository<String>,
+      callbackFn: () -> Any,
+  ) {
+    val client = OkHttpClient.Builder().connectTimeout(timeout = 30, TimeUnit.SECONDS).build()
     val request = Request.Builder().url(search.format(query, queryCount)).build()
 
     client
@@ -57,13 +61,20 @@ class AudibleYoutubeApi {
         .enqueue(
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
+                e.message?.let {
+                  responseRepo.update(value = "message: $it")
+                  callbackFn()
+                }
               }
 
               override fun onResponse(call: Call, response: Response) {
                 response.use {
-                  if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                  repository.update(response.body!!.string())
+                  if (!response.isSuccessful) {
+                    responseRepo.update(
+                        value = "code: ${response.code}\nmessage: ${response.message}")
+                  } else {
+                    responseRepo.update(response.body!!.string())
+                  }
                   callbackFn()
                 }
               }

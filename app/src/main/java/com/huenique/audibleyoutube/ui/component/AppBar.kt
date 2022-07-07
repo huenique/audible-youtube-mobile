@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.element
+package com.huenique.audibleyoutube.ui.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height

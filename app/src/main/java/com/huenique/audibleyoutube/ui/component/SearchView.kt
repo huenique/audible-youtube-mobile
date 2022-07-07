@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.element
+package com.huenique.audibleyoutube.ui.component
 
 import android.content.res.Configuration
 import android.os.Environment
@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,10 +35,11 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import java.io.File
+import org.json.JSONException
 import org.json.JSONObject
 
 @Composable
-fun MainAppContent(
+fun SearchViewContent(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
     searchResultRepoState: SearchRepositoryState,
@@ -95,19 +97,31 @@ fun VariableAppContent(
       modifier = Modifier.verticalScroll(rememberScrollState()),
       verticalArrangement = Arrangement.Top,
       horizontalAlignment = Alignment.CenterHorizontally) {
-    val json = JSONObject(searchResultRepo.getAll())
-    when (true) {
-      json.has("playlist") ->
-          ResultAppContent(
-              json,
-              moreActionState,
-              onMoreActionClicked,
-          )
-      else -> {
+    val result = searchResultRepo.getAll()
+    val json: JSONObject =
+        try {
+          JSONObject(result)
+        } catch (err: JSONException) {
+          JSONObject()
+        }
+
+    if (json.has("playlist")) {
+      ResultAppContent(
+          json,
+          moreActionState,
+          onMoreActionClicked,
+      )
+    } else {
+      Column(horizontalAlignment = Alignment.Start) {
+        Text(text = "Oops! Something went wrong.", fontWeight = FontWeight.Bold)
+        Text(text = result, color = MaterialTheme.colors.error)
+        Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+        Text(text = "Some things you can do:", textDecoration = TextDecoration.Underline)
         Text(
-            "Something went wrong!\n" +
+            text =
                 "- Check your internet connection and try again.\n" +
-                "- Try restarting the app.")
+                    "- Try restarting the app.\n" +
+                    "- Try again later.")
       }
     }
   }
@@ -230,7 +244,7 @@ fun DefaultAppContentPreview() {
 @Composable
 fun ResultAppContentPreview() {
   val json =
-"""
+      """
 {
     "playlist":[
         {
