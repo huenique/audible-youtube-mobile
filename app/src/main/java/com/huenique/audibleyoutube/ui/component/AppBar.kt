@@ -44,7 +44,7 @@ fun MainAppBar(
 @Composable
 fun DefaultAppBar(onSearchClicked: () -> Unit) {
   TopAppBar(
-      title = { Text(text = "Audible Youtube") },
+      title = { Text(text = "Audible YouTube") },
       actions = {
         IconButton(onClick = { onSearchClicked() }) {
           Icon(
