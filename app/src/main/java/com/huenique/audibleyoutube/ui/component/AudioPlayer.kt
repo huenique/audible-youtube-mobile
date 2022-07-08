@@ -25,6 +25,18 @@ fun AudioPlayer(audioFile: File) {
   // example: File(context.getDir("Music", MODE_PRIVATE), "audio.mp3")
   val mp: MediaPlayer = MediaPlayer.create(context, Uri.fromFile(audioFile))
 
+  //  fun playAudio(url: String) {
+  //    viewModelScope.launch {
+  //      withContext(Dispatchers.IO) {
+  //        mediaPlayer.reset()
+  //        mediaPlayer.setDataSource(URL(url).toString())
+  //        mediaPlayer.prepare()
+  //        mediaPlayer.start()
+  //      }
+  //    }
+  //  }
+  // }
+
   Column(
       modifier = Modifier.fillMaxSize(),
       verticalArrangement = Arrangement.Center,
@@ -34,7 +46,7 @@ fun AudioPlayer(audioFile: File) {
         contentDescription = "",
         modifier = Modifier.height(160.dp).width(160.dp).padding(32.dp).background(Color.Black))
 
-    Row() {
+    Row {
       IconButton(onClick = { mp.start() }, modifier = Modifier.size(35.dp)) {
         Icon(painter = painterResource(id = R.drawable.ic_play), contentDescription = null)
       }

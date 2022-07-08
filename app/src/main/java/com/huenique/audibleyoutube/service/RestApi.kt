@@ -1,13 +1,13 @@
 package com.huenique.audibleyoutube.service
 
 import com.huenique.audibleyoutube.repository.Repository
-import java.io.File
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 import okhttp3.*
 import okio.BufferedSink
 import okio.buffer
 import okio.sink
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class AudibleYoutubeApi {
   private val queryCount = 1
@@ -37,7 +37,7 @@ class AudibleYoutubeApi {
                     totalRead += lastRead
                     sink.emitCompleteSegments()
 
-                    // Notify user of download progress
+                    // TODO: Notify user of download progress
                     println(totalRead)
                   }
 

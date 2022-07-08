@@ -17,6 +17,7 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter)
   val searchResultRepository = repositoryGetter.searchResultRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val searchTextState by mainViewModel.searchTextState
+  val playlistState by mainViewModel.playlistState
 
   Scaffold(
       topBar = {

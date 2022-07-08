@@ -1,6 +1,5 @@
 package com.huenique.audibleyoutube.ui.component
 
-import android.content.res.Configuration
 import android.os.Environment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.state.ActionRepositoryState
+import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import java.io.File
@@ -43,12 +44,14 @@ fun SearchViewContent(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
     searchResultRepoState: SearchRepositoryState,
+    playlistState: PlaylistState,
     searchResultRepo: SearchResultRepository,
     isLoading: Boolean,
     onContentLoad: (Boolean) -> Unit,
     onMoreActionClicked: () -> Unit,
     onAddToPlaylist: (String, File) -> Unit,
-    onCloseDialogue: () -> Unit
+    onCloseDialogue: () -> Unit,
+    onPlaylistShow: () -> Unit,
 ) {
   if (isLoading) PreLoader()
 
@@ -56,7 +59,13 @@ fun SearchViewContent(
     SearchRepositoryState.CHANGED -> {
       onContentLoad(false)
       VariableAppContent(searchResultRepo, moreActionState, onMoreActionClicked)
-      MainDialogue(actionRepoState, moreActionState, onAddToPlaylist, onCloseDialogue)
+      MainDialogue(
+          actionRepoState = actionRepoState,
+          moreActionState = moreActionState,
+          playlistState = playlistState,
+          onAddToPlaylist = onAddToPlaylist,
+          onCloseDialogue = onCloseDialogue,
+          onPlaylistShow = onPlaylistShow)
     }
     SearchRepositoryState.DISPLAYED -> {
       if (!isLoading) DefaultAppContent()
@@ -186,45 +195,67 @@ fun ResultAppContent(
 fun MainDialogue(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
+    playlistState: PlaylistState,
     onAddToPlaylist: (String, File) -> Unit,
     onCloseDialogue: () -> Unit,
+    onPlaylistShow: () -> Unit,
 ) {
   when (actionRepoState) {
     ActionRepositoryState.OPENED ->
-        ResultDialogue(moreActionState, onAddToPlaylist, onCloseDialogue)
-    ActionRepositoryState.CLOSED -> println("Action Repo is CLOSED")
+        ResultDialogue(
+            moreActionState = moreActionState,
+            playlistState = playlistState,
+            onAddToPlaylist = onAddToPlaylist,
+            onCloseDialogue = onCloseDialogue,
+            onPlaylistShow = onPlaylistShow)
+    ActionRepositoryState.CLOSED -> {}
   }
 }
 
 @Composable
 fun ResultDialogue(
     moreActionState: SnapshotStateMap<String, String>,
+    playlistState: PlaylistState,
     onAddToPlaylist: (String, File) -> Unit,
     onCloseDialogue: () -> Unit,
+    onPlaylistShow: () -> Unit,
 ) {
-  val config = LocalConfiguration.current
-  val context = LocalContext.current
-  val fileName = "${moreActionState["videoTitle"].toString()}.mp3"
+  val file =
+      File(
+          LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+          "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3")
 
-  Box(
-      modifier =
-          Modifier.fillMaxSize()
-              .background(MaterialTheme.colors.background.copy(alpha = 0.6f))
-              .clickable { onCloseDialogue() },
-      contentAlignment = Alignment.Center) {
-    Box(
-        modifier = Modifier.background(Color.DarkGray).width(config.screenWidthDp.dp / 2),
-        contentAlignment = Alignment.Center) {
-      ClickableText(
-          text = AnnotatedString("Add to Playlist"),
-          modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-          style = TextStyle(color = Color.White),
-          onClick = {
-            onAddToPlaylist(
-                moreActionState["videoLink"].toString(),
-                File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), fileName))
-          })
+  // TODO: Clean this later
+  val createPlaylist = remember { mutableStateOf(value = false) }
+  PlaylistContent(
+      onCreatePlaylist = { createPlaylist.value = it },
+      playlistState = playlistState,
+      onAddToPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
+  CreatePlaylistDialogue(createPlaylistState = createPlaylist.value)
+
+  when (playlistState) {
+    PlaylistState.CLOSED -> {
+      Box(
+          modifier =
+              Modifier.fillMaxSize()
+                  .background(MaterialTheme.colors.background.copy(alpha = 0.6f))
+                  .clickable { onCloseDialogue() },
+          contentAlignment = Alignment.Center) {
+        Box(
+            modifier =
+                Modifier.background(Color.DarkGray)
+                    .width(LocalConfiguration.current.screenWidthDp.dp / 2),
+            contentAlignment = Alignment.Center) {
+          ClickableText(
+              text = AnnotatedString("Add to Playlist"),
+              modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+              style = TextStyle(color = Color.White),
+              // onClick = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
+              onClick = { onPlaylistShow() })
+        }
+      }
     }
+    PlaylistState.OPENED -> {}
   }
 }
 
@@ -273,11 +304,4 @@ fun ResultAppContentPreview() {
 """
   val moreActionState = remember { mutableStateMapOf<String, String>() }
   AudibleYoutubeTheme { ResultAppContent(JSONObject(json), moreActionState) {} }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun ResultDialoguePreview() {
-  val moreActionState = remember { mutableStateMapOf<String, String>() }
-  AudibleYoutubeTheme { ResultDialogue(moreActionState, { a, b -> a + b }, {}) }
 }
