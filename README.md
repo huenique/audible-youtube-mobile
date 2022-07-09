@@ -11,7 +11,7 @@ Audible YouTube Mobile (AYM) is a music player for Android devices.
 
 It allows you to listen to music without advertisements —for free!
 
-It also includes other benefits:
+It also includes technical benefits:
 
 1. Straightforward user interface (UI).
 
@@ -24,7 +24,3 @@ It also includes other benefits:
 3. Mostly I/O bound.
 
     Since AYM utilizes services to execute functionalities, such as parsing YouTube metadata and converting videos to audio files, it only needs to wait for the completion of input/output operations, like writing to a file or waiting for an HTTP response.
-
-4. Free and open-source software.
-
-    Most importantly, it is free and open-source.

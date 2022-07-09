@@ -226,12 +226,14 @@ fun ResultDialogue(
           "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3")
 
   // TODO: Clean this later
-  val createPlaylist = remember { mutableStateOf(value = false) }
+  val createPlaylistDxState = remember { mutableStateOf(value = false) }
   PlaylistContent(
-      onCreatePlaylist = { createPlaylist.value = it },
+      onCreatePlaylist = { createPlaylistDxState.value = it },
       playlistState = playlistState,
       onAddToPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
-  CreatePlaylistDialogue(createPlaylistState = createPlaylist.value)
+  CreatePlaylistDialogue(
+      onCreateDxClose = { createPlaylistDxState.value = it },
+      createPlaylistState = createPlaylistDxState.value)
 
   when (playlistState) {
     PlaylistState.CLOSED -> {
