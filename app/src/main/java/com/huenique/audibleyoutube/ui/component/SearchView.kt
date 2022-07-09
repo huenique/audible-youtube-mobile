@@ -35,12 +35,12 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
-import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 @Composable
-fun SearchViewContent(
+fun SearchView(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
     searchResultRepoState: SearchRepositoryState,
@@ -58,7 +58,7 @@ fun SearchViewContent(
   when (searchResultRepoState) {
     SearchRepositoryState.CHANGED -> {
       onContentLoad(false)
-      VariableAppContent(searchResultRepo, moreActionState, onMoreActionClicked)
+      VariableContent(searchResultRepo, moreActionState, onMoreActionClicked)
       MainDialogue(
           actionRepoState = actionRepoState,
           moreActionState = moreActionState,
@@ -68,13 +68,13 @@ fun SearchViewContent(
           onPlaylistShow = onPlaylistShow)
     }
     SearchRepositoryState.DISPLAYED -> {
-      if (!isLoading) DefaultAppContent()
+      if (!isLoading) DefaultContent()
     }
   }
 }
 
 @Composable
-fun DefaultAppContent() {
+fun DefaultContent() {
   Box(modifier = Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier.align(Alignment.Center),
@@ -96,12 +96,11 @@ fun PreLoader() {
 }
 
 @Composable
-fun VariableAppContent(
+fun VariableContent(
     searchResultRepo: SearchResultRepository,
     moreActionState: SnapshotStateMap<String, String>,
     onMoreActionClicked: () -> Unit
 ) {
-
   Column(
       modifier = Modifier.verticalScroll(rememberScrollState()),
       verticalArrangement = Arrangement.Top,
@@ -115,29 +114,34 @@ fun VariableAppContent(
         }
 
     if (json.has("playlist")) {
-      ResultAppContent(
+      ResultContent(
           json,
           moreActionState,
           onMoreActionClicked,
       )
     } else {
-      Column(horizontalAlignment = Alignment.Start) {
-        Text(text = "Oops! Something went wrong.", fontWeight = FontWeight.Bold)
-        Text(text = result, color = MaterialTheme.colors.error)
-        Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
-        Text(text = "Some things you can do:", textDecoration = TextDecoration.Underline)
-        Text(
-            text =
-                "- Check your internet connection and try again.\n" +
-                    "- Try restarting the app.\n" +
-                    "- Try again later.")
-      }
+      ErrorContent(result)
     }
   }
 }
 
 @Composable
-fun ResultAppContent(
+fun ErrorContent(message: String) {
+  Column(horizontalAlignment = Alignment.Start) {
+    Text(text = "Oops! Something went wrong.", fontWeight = FontWeight.Bold)
+    Text(text = message, color = MaterialTheme.colors.error)
+    Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+    Text(text = "Some things you can do:", textDecoration = TextDecoration.Underline)
+    Text(
+        text =
+            "- Check your internet connection and try again.\n" +
+                "- Try restarting the app.\n" +
+                "- Try again later.")
+  }
+}
+
+@Composable
+fun ResultContent(
     json: JSONObject,
     moreActionState: SnapshotStateMap<String, String>,
     onMoreActionClicked: () -> Unit
@@ -227,10 +231,10 @@ fun ResultDialogue(
 
   // TODO: Clean this later
   val createPlaylistDxState = remember { mutableStateOf(value = false) }
-  PlaylistContent(
+  PlaylistSelection(
       onCreatePlaylist = { createPlaylistDxState.value = it },
-      playlistState = playlistState,
-      onAddToPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
+      onAddToPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) },
+      playlistState = playlistState)
   CreatePlaylistDialogue(
       onCreateDxClose = { createPlaylistDxState.value = it },
       createPlaylistState = createPlaylistDxState.value)
@@ -270,7 +274,7 @@ fun PreLoaderPreview() {
 @Preview
 @Composable
 fun DefaultAppContentPreview() {
-  AudibleYoutubeTheme { DefaultAppContent() }
+  AudibleYoutubeTheme { DefaultContent() }
 }
 
 @Preview
@@ -305,5 +309,5 @@ fun ResultAppContentPreview() {
 }
 """
   val moreActionState = remember { mutableStateMapOf<String, String>() }
-  AudibleYoutubeTheme { ResultAppContent(JSONObject(json), moreActionState) {} }
+  AudibleYoutubeTheme { ResultContent(JSONObject(json), moreActionState) {} }
 }

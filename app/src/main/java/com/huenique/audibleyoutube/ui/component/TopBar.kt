@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun MainAppBar(
+fun TopBar(
     searchWidgetState: SearchWidgetState,
     searchTextState: String,
     onTextChange: (String) -> Unit,
@@ -29,10 +29,10 @@ fun MainAppBar(
 ) {
   when (searchWidgetState) {
     SearchWidgetState.CLOSED -> {
-      DefaultAppBar(onSearchClicked = onSearchTriggered)
+      DefaultTopBar(onSearchClicked = onSearchTriggered)
     }
     SearchWidgetState.OPENED -> {
-      SearchAppBar(
+      SearchTopBar(
           text = searchTextState,
           onTextChange = onTextChange,
           onCloseClicked = onCloseClicked,
@@ -42,7 +42,7 @@ fun MainAppBar(
 }
 
 @Composable
-fun DefaultAppBar(onSearchClicked: () -> Unit) {
+fun DefaultTopBar(onSearchClicked: () -> Unit) {
   TopAppBar(
       title = { Text(text = "Audible YouTube") },
       actions = {
@@ -56,7 +56,7 @@ fun DefaultAppBar(onSearchClicked: () -> Unit) {
 }
 
 @Composable
-fun SearchAppBar(
+fun SearchTopBar(
     text: String,
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
@@ -113,12 +113,12 @@ fun SearchAppBar(
 @Composable
 @Preview
 fun DefaultAppBarPreview() {
-  DefaultAppBar(onSearchClicked = {})
+  DefaultTopBar(onSearchClicked = {})
 }
 
 @Composable
 @Preview
 fun SearchAppBarPreview() {
-  SearchAppBar(
+  SearchTopBar(
       text = "Some random text", onTextChange = {}, onCloseClicked = {}, onSearchClicked = {})
 }

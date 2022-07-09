@@ -21,65 +21,50 @@ import androidx.compose.ui.unit.sp
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 
 // TODO: Impl higher level fn than PlaylistContent
 
 @Composable
-fun PlaylistContent(
+fun PlaylistSelection(
     onCreatePlaylist: (Boolean) -> Unit,
     playlistState: PlaylistState,
-    onAddToPlaylist: () -> Unit,
+    onAddToPlaylist: () -> Unit
 ) {
   when (playlistState) {
     PlaylistState.OPENED -> {
-      Box(modifier = Modifier.fillMaxSize().background(color = Color.White)) {
-        Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
-
-          // TopBar / Content separator
-          Box(modifier = Modifier.height(40.dp)) {}
-
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_library_add),
-                contentDescription = null)
-
-            Column {
-              ClickableText(
-                  text = AnnotatedString("Create New"),
-                  modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-                  style = TextStyle(fontSize = 20.sp),
-                  onClick = { onCreatePlaylist(true) })
-              Divider(
-                  Modifier.padding(start = 14.dp),
-                  color = Color.Gray.copy(alpha = 0.6f),
-                  thickness = 1.dp)
-            }
-          }
-
-          // TODO: Check for existing libraries
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
-
-            Column {
-              ClickableText(
-                  text = AnnotatedString("Example Playlist"),
-                  modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-                  style = TextStyle(fontSize = 20.sp),
-                  onClick = { onAddToPlaylist() })
-              Divider(
-                  Modifier.padding(start = 14.dp),
-                  color = Color.Gray.copy(alpha = 0.6f),
-                  thickness = 1.dp)
-            }
-          }
-
-          // Get existing libraries
-          // val docsDir = LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-          // docsDir?.absolutePath?.let { it -> File(it).walk().forEach { println(it) } }
-        }
-      }
+      PlaylistMenu(onCreatePlaylist)
     }
     else -> {}
+  }
+}
+
+@Composable
+fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit) {
+  Box(modifier = Modifier.fillMaxSize().background(color = Color.White)) {
+    Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
+      Box(modifier = Modifier.height(40.dp)) {}
+
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(painter = painterResource(id = R.drawable.ic_library_add), contentDescription = null)
+
+        Column {
+          ClickableText(
+              text = AnnotatedString("Create New"),
+              modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
+              style = TextStyle(fontSize = 20.sp),
+              onClick = { onCreatePlaylist(true) })
+          Divider(
+              Modifier.padding(start = 14.dp),
+              color = Color.Gray.copy(alpha = 0.6f),
+              thickness = 1.dp)
+        }
+      }
+
+      // Get existing libraries
+      // val docsDir = LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+      // docsDir?.absolutePath?.let { it -> File(it).walk().forEach { println(it) } }
+    }
   }
 }
 
@@ -104,6 +89,7 @@ fun Playlist(name: String, onAddToPlaylist: () -> Unit) {
 fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistState: Boolean) {
   if (createPlaylistState) {
     val playlistNameState = remember { mutableStateOf(TextFieldValue()) }
+    val onPressOk = remember { mutableStateOf(value = "") }
 
     BoxWithConstraints(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
       Box(
@@ -135,7 +121,9 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
                       focusedIndicatorColor = Color.White,
                       unfocusedIndicatorColor = Color.White,
                   ))
+
           Spacer(modifier = Modifier.weight(1f))
+
           Row(modifier = Modifier.height(IntrinsicSize.Min).padding(bottom = 26.dp)) {
             ClickableText(
                 text = AnnotatedString(text = "Cancel"),
@@ -155,7 +143,17 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
                         color = MaterialTheme.colors.secondary,
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center),
-                onClick = {})
+                onClick = {
+                  val playlistName = playlistNameState.value.text
+                  val file = File("$playlistName.m3u")
+                  val isPlaylistCreated = file.createNewFile()
+
+                  if (isPlaylistCreated) {
+                    onPressOk.value = "$playlistName successfully created"
+                  } else {
+                    onPressOk.value = "$playlistName already exists"
+                  }
+                })
           }
         }
       }
@@ -163,14 +161,14 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
   }
 }
 
-// @Preview(showSystemUi = true, showBackground = true)
-// @Composable
-// fun PlaylistContentPreview() {
-//  val state = remember { mutableStateOf(value = true) }
-//  AudibleYoutubeTheme { PlaylistContent({ state.value = true }, PlaylistState.OPENED, {}) }
-// }
-
 @Preview(showSystemUi = true, showBackground = true)
+@Composable
+fun PlaylistContentPreview() {
+  val state = remember { mutableStateOf(value = true) }
+  AudibleYoutubeTheme { PlaylistSelection({ state.value = true }, PlaylistState.OPENED, {}) }
+}
+
+@Preview
 @Composable
 fun PlaylistPreview() {
   val state = remember { mutableStateOf(value = true) }

@@ -22,7 +22,7 @@ import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 
 @Composable
-fun LibraryScreen() {
+fun MusicLibrary() {
   Column {
     MainSelection()
     RecentlyPlayed()
@@ -92,5 +92,5 @@ fun RecentlyAdded() {
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun MusicLibraryPreview() {
-  AudibleYoutubeTheme { LibraryScreen() }
+  AudibleYoutubeTheme { MusicLibrary() }
 }

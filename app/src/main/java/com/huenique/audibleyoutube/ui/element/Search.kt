@@ -7,11 +7,11 @@ import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
-import com.huenique.audibleyoutube.ui.component.SearchViewContent
+import com.huenique.audibleyoutube.ui.component.SearchView
 import java.io.File
 
 @Composable
-fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
+fun Search(mainViewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
   val audibleYoutube = AudibleYoutubeApi()
   val moreActionState = mainViewModel.moreActionState
   val searchRepositoryState by mainViewModel.searchRepositoryState
@@ -19,7 +19,7 @@ fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchRes
   val isLoading by mainViewModel.isLoading
   val playlistState by mainViewModel.playlistState
 
-  SearchViewContent(
+  SearchView(
       actionRepoState = actionRepoState,
       moreActionState = moreActionState,
       searchResultRepoState = searchRepositoryState,
@@ -37,8 +37,5 @@ fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchRes
       onCloseDialogue = {
         mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
       },
-      onPlaylistShow = {
-        mainViewModel.updatePlaylistState(newValue = PlaylistState.OPENED)
-      }
-  )
+      onPlaylistShow = { mainViewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
 }
