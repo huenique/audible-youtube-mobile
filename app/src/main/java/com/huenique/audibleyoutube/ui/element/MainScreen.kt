@@ -14,7 +14,7 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter)
 
   Scaffold(
       topBar = {
-        AppBar(
+        MainTopAppBar(
             mainViewModel = mainViewModel,
             searchResultRepository = searchResultRepository,
             searchWidgetState = searchWidgetState)
@@ -22,10 +22,11 @@ fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter)
       content = {
         when (searchWidgetState) {
           SearchWidgetState.OPENED -> {
-            Search(mainViewModel = mainViewModel, searchResultRepository = searchResultRepository)
+            SearchScreen(
+                mainViewModel = mainViewModel, searchResultRepository = searchResultRepository)
           }
           SearchWidgetState.CLOSED -> {
-            MusicLibrary()
+            MusicLibraryScreen()
           }
         }
       })

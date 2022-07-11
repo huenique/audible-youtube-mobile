@@ -11,7 +11,7 @@ import com.huenique.audibleyoutube.ui.component.SearchView
 import java.io.File
 
 @Composable
-fun Search(mainViewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
+fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
   val audibleYoutube = AudibleYoutubeApi()
   val moreActionState = mainViewModel.moreActionState
   val searchRepositoryState by mainViewModel.searchRepositoryState

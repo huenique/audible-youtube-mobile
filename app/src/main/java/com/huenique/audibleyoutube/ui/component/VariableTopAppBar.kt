@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun TopAppBar(
+fun VariableTopAppBar(
     searchWidgetState: SearchWidgetState,
     searchTextState: String,
     onTextChange: (String) -> Unit,
@@ -44,15 +44,15 @@ fun TopAppBar(
 @Composable
 fun DefaultTopAppBar(onSearchClicked: () -> Unit) {
   TopAppBar(
-    title = { Text(text = "Audible YouTube") },
-    actions = {
-      IconButton(onClick = { onSearchClicked() }) {
-        Icon(
-          imageVector = Icons.Filled.Search,
-          contentDescription = "Search Icon",
-          tint = Color.White)
-      }
-    })
+      title = { Text(text = "Audible YouTube") },
+      actions = {
+        IconButton(onClick = { onSearchClicked() }) {
+          Icon(
+              imageVector = Icons.Filled.Search,
+              contentDescription = "Search Icon",
+              tint = Color.White)
+        }
+      })
 }
 
 @Composable
