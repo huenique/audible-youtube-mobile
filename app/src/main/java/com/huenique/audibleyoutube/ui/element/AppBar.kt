@@ -7,7 +7,7 @@ import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.ui.component.TopBar
+import com.huenique.audibleyoutube.ui.component.TopAppBar
 
 @Composable
 fun AppBar(
@@ -20,7 +20,7 @@ fun AppBar(
   val searchTextState by mainViewModel.searchTextState
   val playlistState by mainViewModel.playlistState
 
-  TopBar(
+  TopAppBar(
       searchWidgetState = searchWidgetState,
       searchTextState = searchTextState,
       onTextChange = { mainViewModel.updateSearchTextState(newValue = it) },

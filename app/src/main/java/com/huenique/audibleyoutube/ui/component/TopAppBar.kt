@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun TopBar(
+fun TopAppBar(
     searchWidgetState: SearchWidgetState,
     searchTextState: String,
     onTextChange: (String) -> Unit,
@@ -29,10 +29,10 @@ fun TopBar(
 ) {
   when (searchWidgetState) {
     SearchWidgetState.CLOSED -> {
-      DefaultTopBar(onSearchClicked = onSearchTriggered)
+      DefaultTopAppBar(onSearchClicked = onSearchTriggered)
     }
     SearchWidgetState.OPENED -> {
-      SearchTopBar(
+      SearchTopAppBar(
           text = searchTextState,
           onTextChange = onTextChange,
           onCloseClicked = onCloseClicked,
@@ -42,21 +42,21 @@ fun TopBar(
 }
 
 @Composable
-fun DefaultTopBar(onSearchClicked: () -> Unit) {
+fun DefaultTopAppBar(onSearchClicked: () -> Unit) {
   TopAppBar(
-      title = { Text(text = "Audible YouTube") },
-      actions = {
-        IconButton(onClick = { onSearchClicked() }) {
-          Icon(
-              imageVector = Icons.Filled.Search,
-              contentDescription = "Search Icon",
-              tint = Color.White)
-        }
-      })
+    title = { Text(text = "Audible YouTube") },
+    actions = {
+      IconButton(onClick = { onSearchClicked() }) {
+        Icon(
+          imageVector = Icons.Filled.Search,
+          contentDescription = "Search Icon",
+          tint = Color.White)
+      }
+    })
 }
 
 @Composable
-fun SearchTopBar(
+fun SearchTopAppBar(
     text: String,
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
@@ -113,12 +113,12 @@ fun SearchTopBar(
 @Composable
 @Preview
 fun DefaultAppBarPreview() {
-  DefaultTopBar(onSearchClicked = {})
+  DefaultTopAppBar(onSearchClicked = {})
 }
 
 @Composable
 @Preview
 fun SearchAppBarPreview() {
-  SearchTopBar(
+  SearchTopAppBar(
       text = "Some random text", onTextChange = {}, onCloseClicked = {}, onSearchClicked = {})
 }
