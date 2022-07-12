@@ -70,6 +70,7 @@ fun SearchView(
     SearchRepositoryState.DISPLAYED -> {
       if (!isLoading) DefaultContent()
     }
+    else -> {}
   }
 }
 

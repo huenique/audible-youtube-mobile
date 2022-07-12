@@ -52,7 +52,7 @@ class MainViewModel : ViewModel() {
     _actionRepositoryState.value = newValue
   }
 
-  fun updatePreloadState(newValue: Boolean) {
+  fun updateSpinnerState(newValue: Boolean) {
     _isLoading.value = newValue
   }
 

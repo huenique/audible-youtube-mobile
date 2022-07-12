@@ -10,8 +10,7 @@ import com.huenique.audibleyoutube.utils.RepositoryGetter
 
 object NavRoute {
   const val HOME = "home"
-  val SEARCH = "search"
-  val LIBRARY = "library"
+  const val LIBRARY = "library"
 }
 
 @Composable
@@ -35,6 +34,9 @@ fun MainNavHost(
           onNavigation = { navHostController.navigate(NavRoute.HOME) },
           viewModel = viewModel,
           repositoryGetter = repositoryGetter)
+    }
+    composable(NavRoute.LIBRARY) {
+      LibraryScreen(onNavigation = { navHostController.navigate(NavRoute.HOME) })
     }
   }
 }

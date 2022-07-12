@@ -26,7 +26,7 @@ fun HomeSearch(viewModel: MainViewModel, searchResultRepository: SearchResultRep
       searchResultRepo = searchResultRepository,
       playlistState = playlistState,
       isLoading = isLoading,
-      onContentLoad = { viewModel.updatePreloadState(newValue = it) },
+      onContentLoad = { viewModel.updateSpinnerState(newValue = it) },
       onMoreActionClicked = {
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
       },
