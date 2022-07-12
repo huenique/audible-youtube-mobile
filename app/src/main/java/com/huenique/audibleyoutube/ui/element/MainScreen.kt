@@ -1,33 +1,40 @@
 package com.huenique.audibleyoutube.ui.element
 
-import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.RepositoryGetter
 
-@Composable
-fun MainScreen(mainViewModel: MainViewModel, repositoryGetter: RepositoryGetter) {
-  val searchResultRepository = repositoryGetter.searchResultRepository()
-  val searchWidgetState by mainViewModel.searchWidgetState
+object NavRoute {
+  const val HOME = "home"
+  val SEARCH = "search"
+  val LIBRARY = "library"
+}
 
-  Scaffold(
-      topBar = {
-        MainTopAppBar(
-            mainViewModel = mainViewModel,
-            searchResultRepository = searchResultRepository,
-            searchWidgetState = searchWidgetState)
-      },
-      content = {
-        when (searchWidgetState) {
-          SearchWidgetState.OPENED -> {
-            SearchScreen(
-                mainViewModel = mainViewModel, searchResultRepository = searchResultRepository)
-          }
-          SearchWidgetState.CLOSED -> {
-            MusicLibraryScreen()
-          }
-        }
-      })
+@Composable
+fun MainScreen(viewModel: MainViewModel) {
+  val repositoryGetter = RepositoryGetter()
+  val navController = rememberNavController()
+
+  MainNavHost(
+      navHostController = navController, viewModel = viewModel, repositoryGetter = repositoryGetter)
+}
+
+@Composable
+fun MainNavHost(
+    navHostController: NavHostController,
+    viewModel: MainViewModel,
+    repositoryGetter: RepositoryGetter
+) {
+  NavHost(navController = navHostController, startDestination = NavRoute.HOME) {
+    composable(NavRoute.HOME) {
+      HomeScreen(
+          onNavigation = { navHostController.navigate(NavRoute.HOME) },
+          viewModel = viewModel,
+          repositoryGetter = repositoryGetter)
+    }
+  }
 }

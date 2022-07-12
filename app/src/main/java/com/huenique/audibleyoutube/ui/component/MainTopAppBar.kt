@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun VariableTopAppBar(
+fun MainTopAppBar(
     searchWidgetState: SearchWidgetState,
     searchTextState: String,
     onTextChange: (String) -> Unit,

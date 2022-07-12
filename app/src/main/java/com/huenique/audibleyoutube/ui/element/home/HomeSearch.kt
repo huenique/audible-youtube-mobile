@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.element
+package com.huenique.audibleyoutube.ui.element.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,13 +11,13 @@ import com.huenique.audibleyoutube.ui.component.SearchView
 import java.io.File
 
 @Composable
-fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
+fun HomeSearch(viewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
   val audibleYoutube = AudibleYoutubeApi()
-  val moreActionState = mainViewModel.moreActionState
-  val searchRepositoryState by mainViewModel.searchRepositoryState
-  val actionRepoState by mainViewModel.actionRepositoryState
-  val isLoading by mainViewModel.isLoading
-  val playlistState by mainViewModel.playlistState
+  val moreActionState = viewModel.moreActionState
+  val searchRepositoryState by viewModel.searchRepositoryState
+  val actionRepoState by viewModel.actionRepositoryState
+  val isLoading by viewModel.isLoading
+  val playlistState by viewModel.playlistState
 
   SearchView(
       actionRepoState = actionRepoState,
@@ -26,16 +26,16 @@ fun SearchScreen(mainViewModel: MainViewModel, searchResultRepository: SearchRes
       searchResultRepo = searchResultRepository,
       playlistState = playlistState,
       isLoading = isLoading,
-      onContentLoad = { mainViewModel.updatePreloadState(newValue = it) },
+      onContentLoad = { viewModel.updatePreloadState(newValue = it) },
       onMoreActionClicked = {
-        mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
+        viewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
       },
       onAddToPlaylist = { query: String, file: File ->
         audibleYoutube.downloadVideo(query, file)
-        mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
+        viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
       },
       onCloseDialogue = {
-        mainViewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
+        viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
       },
-      onPlaylistShow = { mainViewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
+      onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
 }

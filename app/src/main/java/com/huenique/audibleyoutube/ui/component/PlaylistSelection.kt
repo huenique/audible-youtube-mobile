@@ -66,16 +66,14 @@ fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit, onAddToPlaylist: () -> Uni
         }
       }
 
-      LocalContext.current
-          .getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-          ?.absolutePath
-          ?.let { it ->
-            File(it).walk().forEach {
-              if (it.isFile) {
-                Playlist(it.nameWithoutExtension, onAddToPlaylist)
-              }
-            }
+      LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath?.let { it
+        ->
+        File(it).walk().forEach {
+          if (it.isFile) {
+            Playlist(it.nameWithoutExtension, onAddToPlaylist)
           }
+        }
+      }
     }
   }
 }
@@ -105,7 +103,7 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
     val playlistName = playlistNameState.value.text
     val file =
         File(
-            LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
+            LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
             "$playlistName.m3u")
 
     BoxWithConstraints(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {

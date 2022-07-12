@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.element
+package com.huenique.audibleyoutube.ui.element.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,37 +7,35 @@ import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.ui.component.VariableTopAppBar
+import com.huenique.audibleyoutube.ui.component.MainTopAppBar
 
 @Composable
-fun MainTopAppBar(
-    mainViewModel: MainViewModel,
+fun HomeTopAppBar(
+    viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState
 ) {
   val audibleYoutube = AudibleYoutubeApi()
 
-  val searchTextState by mainViewModel.searchTextState
-  val playlistState by mainViewModel.playlistState
+  val searchTextState by viewModel.searchTextState
+  val playlistState by viewModel.playlistState
 
-  VariableTopAppBar(
+  MainTopAppBar(
       searchWidgetState = searchWidgetState,
       searchTextState = searchTextState,
-      onTextChange = { mainViewModel.updateSearchTextState(newValue = it) },
-      onCloseClicked = {
-        mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED)
-      },
+      onTextChange = { viewModel.updateSearchTextState(newValue = it) },
+      onCloseClicked = { viewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED) },
       onSearchClicked = {
-        mainViewModel.updateSearchRepoState(newValue = SearchRepositoryState.DISPLAYED)
-        mainViewModel.updatePreloadState(newValue = true)
+        viewModel.updateSearchRepoState(newValue = SearchRepositoryState.DISPLAYED)
+        viewModel.updatePreloadState(newValue = true)
         audibleYoutube.searchVideo(
             query = it,
             responseRepo = searchResultRepository,
             callbackFn = {
-              mainViewModel.updateSearchRepoState(newValue = SearchRepositoryState.CHANGED)
+              viewModel.updateSearchRepoState(newValue = SearchRepositoryState.CHANGED)
             })
       },
       onSearchTriggered = {
-        mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)
+        viewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)
       })
 }
