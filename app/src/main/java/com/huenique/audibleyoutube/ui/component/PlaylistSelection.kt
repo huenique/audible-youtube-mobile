@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.ui.component
 
+import android.os.Environment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
@@ -10,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -27,13 +29,16 @@ import java.io.File
 
 @Composable
 fun PlaylistSelection(
-    onCreatePlaylist: (Boolean) -> Unit,
     playlistState: PlaylistState,
-    onAddToPlaylist: () -> Unit
+    onCreatePlaylist: ((Boolean) -> Unit)? = null,
+    onAddToPlaylist: (() -> Unit)? = null,
+    addToPlaylist: Boolean = false
 ) {
   when (playlistState) {
     PlaylistState.OPENED -> {
-      PlaylistMenu(onCreatePlaylist)
+      if (onCreatePlaylist != null) {
+        PlaylistMenu(onCreatePlaylist)
+      }
     }
     else -> {}
   }
@@ -90,6 +95,11 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
   if (createPlaylistState) {
     val playlistNameState = remember { mutableStateOf(TextFieldValue()) }
     val onPressOk = remember { mutableStateOf(value = "") }
+    val playlistName = playlistNameState.value.text
+    val file =
+        File(
+            LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
+            "$playlistName.m3u")
 
     BoxWithConstraints(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
       Box(
@@ -144,8 +154,6 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center),
                 onClick = {
-                  val playlistName = playlistNameState.value.text
-                  val file = File("$playlistName.m3u")
                   val isPlaylistCreated = file.createNewFile()
 
                   if (isPlaylistCreated) {
@@ -153,6 +161,8 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
                   } else {
                     onPressOk.value = "$playlistName already exists"
                   }
+
+                  println(onPressOk.value)
                 })
           }
         }
@@ -165,7 +175,12 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
 @Composable
 fun PlaylistContentPreview() {
   val state = remember { mutableStateOf(value = true) }
-  AudibleYoutubeTheme { PlaylistSelection({ state.value = true }, PlaylistState.OPENED, {}) }
+  AudibleYoutubeTheme {
+    PlaylistSelection(
+        playlistState = PlaylistState.OPENED,
+        onCreatePlaylist = { state.value = true },
+        onAddToPlaylist = {})
+  }
 }
 
 @Preview
