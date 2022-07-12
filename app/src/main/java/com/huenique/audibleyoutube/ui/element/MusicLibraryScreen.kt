@@ -1,6 +1,8 @@
 package com.huenique.audibleyoutube.ui.element
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Divider
@@ -44,7 +46,10 @@ fun MainSelection() {
         ClickableText(
             text = AnnotatedString("All Songs"),
             modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-            style = TextStyle(fontSize = 20.sp),
+            style =
+                TextStyle(
+                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                    fontSize = 20.sp),
             onClick = {})
         Divider(
             Modifier.padding(start = 14.dp),
@@ -60,7 +65,10 @@ fun MainSelection() {
         ClickableText(
             text = AnnotatedString("Playlists"),
             modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-            style = TextStyle(fontSize = 20.sp),
+            style =
+                TextStyle(
+                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                    fontSize = 20.sp),
             onClick = {})
         Divider(
             Modifier.padding(start = 14.dp),
@@ -74,7 +82,10 @@ fun MainSelection() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun RecentlyPlayed() {
-  Text(text = "Recently Played", modifier = Modifier.padding(start = 14.dp, top = 24.dp))
+  Text(
+      text = "Recently Played",
+      modifier = Modifier.padding(start = 14.dp, top = 24.dp),
+      color = if (isSystemInDarkTheme()) Color.White else Color.Black)
   HorizontalPager(count = 5) {
     Image(painter = painterResource(id = R.drawable.placeholder_image), contentDescription = null)
   }
@@ -83,13 +94,16 @@ fun RecentlyPlayed() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun RecentlyAdded() {
-  Text(text = "Recently Added", modifier = Modifier.padding(start = 14.dp, top = 24.dp))
+  Text(
+      text = "Recently Added",
+      modifier = Modifier.padding(start = 14.dp, top = 24.dp),
+      color = if (isSystemInDarkTheme()) Color.White else Color.Black)
   HorizontalPager(count = 5) {
     Image(painter = painterResource(id = R.drawable.placeholder_image), contentDescription = null)
   }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
+@Preview
 @Composable
 fun MusicLibraryPreview() {
   AudibleYoutubeTheme { MusicLibraryScreen() }
