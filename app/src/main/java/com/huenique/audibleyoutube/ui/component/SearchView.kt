@@ -107,7 +107,7 @@ fun VariableContent(
       verticalArrangement = Arrangement.Top,
       horizontalAlignment = Alignment.CenterHorizontally) {
     val result = searchResultRepo.getAll()
-    val json: JSONObject =
+    val json =
         try {
           JSONObject(result)
         } catch (err: JSONException) {

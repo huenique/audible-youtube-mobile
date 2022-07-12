@@ -2,7 +2,7 @@ package com.huenique.audibleyoutube.ui.element.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import com.huenique.audibleyoutube.model.MainViewModel
+import com.huenique.audibleyoutube.model.HomeViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.PlaylistState
@@ -12,15 +12,13 @@ import com.huenique.audibleyoutube.ui.component.MainTopAppBar
 
 @Composable
 fun HomeTopAppBar(
-    viewModel: MainViewModel,
+    viewModel: HomeViewModel,
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState
 ) {
   val audibleYoutube = AudibleYoutubeApi()
-
   val searchTextState by viewModel.searchTextState
   val searchRepositoryState by viewModel.searchRepositoryState
-  val playlistState by viewModel.playlistState
 
   MainTopAppBar(
       searchWidgetState = searchWidgetState,

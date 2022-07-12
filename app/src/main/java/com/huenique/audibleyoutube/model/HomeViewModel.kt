@@ -11,7 +11,7 @@ import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
-class MainViewModel : ViewModel() {
+class HomeViewModel : ViewModel() {
   private val _searchWidgetState: MutableState<SearchWidgetState> =
       mutableStateOf(value = SearchWidgetState.CLOSED)
   val searchWidgetState: State<SearchWidgetState> = _searchWidgetState

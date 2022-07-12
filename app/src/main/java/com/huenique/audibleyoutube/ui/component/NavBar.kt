@@ -17,22 +17,23 @@ import androidx.compose.ui.unit.sp
 import com.huenique.audibleyoutube.R
 
 @Composable
-fun NavBar() {
+fun NavBar(onHomeClick: () -> Unit, onSearchClick: () -> Unit, onLibraryClick: () -> Unit) {
   Surface(
       modifier = Modifier.fillMaxWidth().height(56.dp),
       elevation = AppBarDefaults.BottomAppBarElevation,
       color = MaterialTheme.colors.primary) {
     Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-      NavIcon(iconName = "Home", iconImage = Icons.Filled.Home)
-      NavIcon(iconName = "Search", iconImage = Icons.Filled.Search)
-      NavIcon(iconName = "Library", iconImage = R.drawable.ic_library_music)
+      NavIcon(iconName = "Home", iconImage = Icons.Filled.Home, onClick = onHomeClick)
+      NavIcon(iconName = "Search", iconImage = Icons.Filled.Search, onClick = onSearchClick)
+      NavIcon(
+          iconName = "Library", iconImage = R.drawable.ic_library_music, onClick = onLibraryClick)
     }
   }
 }
 
 @Composable
-fun NavIcon(iconName: String, iconImage: Any) {
-  IconButton(onClick = { println("Search clicked") }) {
+fun NavIcon(iconName: String, iconImage: Any, onClick: () -> Unit) {
+  IconButton(onClick = onClick) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
@@ -56,5 +57,5 @@ fun NavIcon(iconName: String, iconImage: Any) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun NavBarPreview() {
-  NavBar()
+  NavBar({}, {}, {})
 }

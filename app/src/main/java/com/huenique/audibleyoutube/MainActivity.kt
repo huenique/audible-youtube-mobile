@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import com.huenique.audibleyoutube.model.MainViewModel
+import com.huenique.audibleyoutube.model.HomeViewModel
 import com.huenique.audibleyoutube.ui.element.MainScreen
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 
 class MainActivity : ComponentActivity() {
-  private val viewModel: MainViewModel by viewModels()
+  private val viewModel: HomeViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
