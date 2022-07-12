@@ -36,8 +36,8 @@ fun PlaylistSelection(
 ) {
   when (playlistState) {
     PlaylistState.OPENED -> {
-      if (onCreatePlaylist != null) {
-        PlaylistMenu(onCreatePlaylist)
+      if (onCreatePlaylist != null && onAddToPlaylist != null) {
+        PlaylistMenu(onCreatePlaylist = onCreatePlaylist, onAddToPlaylist = onAddToPlaylist)
       }
     }
     else -> {}
@@ -45,7 +45,7 @@ fun PlaylistSelection(
 }
 
 @Composable
-fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit) {
+fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit, onAddToPlaylist: () -> Unit) {
   Box(modifier = Modifier.fillMaxSize().background(color = Color.White)) {
     Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
       Box(modifier = Modifier.height(40.dp)) {}
@@ -66,9 +66,16 @@ fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit) {
         }
       }
 
-      // Get existing libraries
-      // val docsDir = LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-      // docsDir?.absolutePath?.let { it -> File(it).walk().forEach { println(it) } }
+      LocalContext.current
+          .getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+          ?.absolutePath
+          ?.let { it ->
+            File(it).walk().forEach {
+              if (it.isFile) {
+                Playlist(it.nameWithoutExtension, onAddToPlaylist)
+              }
+            }
+          }
     }
   }
 }
