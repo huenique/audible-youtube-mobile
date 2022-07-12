@@ -28,6 +28,7 @@ fun HomeSearch(viewModel: MainViewModel, searchResultRepository: SearchResultRep
       isLoading = isLoading,
       onContentLoad = { viewModel.updateSpinnerState(newValue = it) },
       onMoreActionClicked = {
+        viewModel.updatePlaylistState(newValue = PlaylistState.PENDING)
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
       },
       onAddToPlaylist = { query: String, file: File ->

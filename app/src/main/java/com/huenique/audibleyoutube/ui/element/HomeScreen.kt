@@ -5,8 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.ui.element.home.HomeTopAppBar
 import com.huenique.audibleyoutube.ui.element.home.HomeSearch
+import com.huenique.audibleyoutube.ui.element.home.HomeTopAppBar
 import com.huenique.audibleyoutube.utils.RepositoryGetter
 
 @Composable

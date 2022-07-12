@@ -241,7 +241,7 @@ fun ResultDialogue(
       createPlaylistState = createPlaylistDxState.value)
 
   when (playlistState) {
-    PlaylistState.CLOSED -> {
+    PlaylistState.PENDING -> {
       Box(
           modifier =
               Modifier.fillMaxSize()
@@ -262,7 +262,7 @@ fun ResultDialogue(
         }
       }
     }
-    PlaylistState.OPENED -> {}
+    else -> {}
   }
 }
 
