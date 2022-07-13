@@ -1,13 +1,13 @@
-package com.huenique.audibleyoutube.ui.element.home
+package com.huenique.audibleyoutube.screen.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.huenique.audibleyoutube.component.SearchView
 import com.huenique.audibleyoutube.model.HomeViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
-import com.huenique.audibleyoutube.ui.component.SearchView
 import java.io.File
 
 @Composable

@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.component
+package com.huenique.audibleyoutube.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,17 +19,18 @@ import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun MainTopAppBar(
+fun TopBar(
     searchWidgetState: SearchWidgetState,
     searchTextState: String,
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
-    onSearchTriggered: () -> Unit
+    onSearchTriggered: () -> Unit,
+    title: String
 ) {
   when (searchWidgetState) {
     SearchWidgetState.CLOSED -> {
-      DefaultTopAppBar(onSearchClicked = onSearchTriggered)
+      DefaultTopAppBar(title = title, onSearchClicked = onSearchTriggered)
     }
     SearchWidgetState.OPENED -> {
       SearchTopAppBar(
@@ -42,9 +43,9 @@ fun MainTopAppBar(
 }
 
 @Composable
-fun DefaultTopAppBar(onSearchClicked: () -> Unit) {
+fun DefaultTopAppBar(title: String, onSearchClicked: () -> Unit) {
   TopAppBar(
-      title = { Text(text = "Audible YouTube") },
+      title = { Text(text = title) },
       actions = {
         IconButton(onClick = { onSearchClicked() }) {
           Icon(
@@ -113,7 +114,7 @@ fun SearchTopAppBar(
 @Composable
 @Preview
 fun DefaultAppBarPreview() {
-  DefaultTopAppBar(onSearchClicked = {})
+  DefaultTopAppBar("preview", onSearchClicked = {})
 }
 
 @Composable

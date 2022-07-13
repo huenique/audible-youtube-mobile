@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.component
+package com.huenique.audibleyoutube.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*

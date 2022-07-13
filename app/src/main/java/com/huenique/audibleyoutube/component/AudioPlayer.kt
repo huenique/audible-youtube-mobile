@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.component
+package com.huenique.audibleyoutube.component
 
 import android.media.MediaPlayer
 import android.net.Uri

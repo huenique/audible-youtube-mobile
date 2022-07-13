@@ -9,11 +9,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import com.huenique.audibleyoutube.model.HomeViewModel
-import com.huenique.audibleyoutube.ui.element.MainScreen
+import com.huenique.audibleyoutube.model.MainViewModel
+import com.huenique.audibleyoutube.screen.MainScreen
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 
 class MainActivity : ComponentActivity() {
   private val viewModel: HomeViewModel by viewModels()
+  private val mainModel: MainViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -21,7 +23,7 @@ class MainActivity : ComponentActivity() {
       AudibleYoutubeTheme {
         // A surface container using the 'background' color from the theme
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-          MainScreen(viewModel)
+          MainScreen(mainModel, viewModel)
         }
       }
     }

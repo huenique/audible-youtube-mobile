@@ -1,4 +1,4 @@
-package com.huenique.audibleyoutube.ui.element
+package com.huenique.audibleyoutube.screen
 
 import androidx.compose.runtime.Composable
 
