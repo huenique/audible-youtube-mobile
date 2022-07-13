@@ -1,9 +1,9 @@
-package com.huenique.audibleyoutube.screen.home
+package com.huenique.audibleyoutube.screen.main
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.huenique.audibleyoutube.component.SearchView
-import com.huenique.audibleyoutube.model.HomeViewModel
+import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ActionRepositoryState
@@ -11,7 +11,7 @@ import com.huenique.audibleyoutube.state.PlaylistState
 import java.io.File
 
 @Composable
-fun HomeSearch(viewModel: HomeViewModel, searchResultRepository: SearchResultRepository) {
+fun MainVideoSearch(viewModel: MainViewModel, searchResultRepository: SearchResultRepository) {
   val audibleYoutube = AudibleYoutubeApi()
   val moreActionState = viewModel.moreActionState
   val searchRepositoryState by viewModel.searchRepositoryState

@@ -3,7 +3,7 @@ package com.huenique.audibleyoutube.screen.main
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.huenique.audibleyoutube.component.TopBar
-import com.huenique.audibleyoutube.model.HomeViewModel
+import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.screen.NavigationRoute
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
@@ -14,7 +14,7 @@ import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
 fun MainTopAppBar(
-    viewModel: HomeViewModel,
+    viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState,
     screenNavigationState: ScreenNavigationState,

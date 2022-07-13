@@ -8,7 +8,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.huenique.audibleyoutube.component.NavBar
-import com.huenique.audibleyoutube.model.HomeViewModel
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.screen.main.MainTopAppBar
@@ -23,16 +22,16 @@ object NavigationRoute {
 }
 
 @Composable
-fun MainScreen(mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
+fun MainScreen(mainViewModel: MainViewModel) {
   val navController = rememberNavController()
   val searchResultRepository = RepositoryGetter().searchResultRepository()
-  val searchWidgetState by homeViewModel.searchWidgetState
+  val searchWidgetState by mainViewModel.searchWidgetState
   val screenNavigationState by mainViewModel.screenNavigationState
 
   Scaffold(
       topBar = {
         MainTopAppBar(
-            viewModel = homeViewModel,
+            viewModel = mainViewModel,
             searchResultRepository = searchResultRepository,
             searchWidgetState = searchWidgetState,
             screenNavigationState = screenNavigationState,
@@ -41,7 +40,7 @@ fun MainScreen(mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
       content = {
         MainNavHost(
             navController = navController,
-            homeViewModel = homeViewModel,
+            mainViewModel = mainViewModel,
             searchResultRepository = searchResultRepository,
             searchWidgetState = searchWidgetState,
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) })
@@ -57,7 +56,7 @@ fun MainScreen(mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
 @Composable
 fun MainNavHost(
     navController: NavHostController,
-    homeViewModel: HomeViewModel,
+    mainViewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState,
     onNavigate: (ScreenNavigationState) -> Unit,
@@ -66,17 +65,20 @@ fun MainNavHost(
     composable(NavigationRoute.HOME) {
       onNavigate(ScreenNavigationState.HOME)
       HomeScreen(
-          viewModel = homeViewModel,
+          viewModel = mainViewModel,
           searchResultRepository = searchResultRepository,
           searchWidgetState = searchWidgetState)
     }
     composable(NavigationRoute.SEARCH) {
       onNavigate(ScreenNavigationState.SEARCH)
-      SearchScreen()
+      SearchScreen(viewModel = mainViewModel, searchResultRepository = searchResultRepository)
     }
     composable(NavigationRoute.LIBRARY) {
       onNavigate(ScreenNavigationState.LIBRARY)
-      LibraryScreen()
+      LibraryScreen(
+          viewModel = mainViewModel,
+          searchResultRepository = searchResultRepository,
+          searchWidgetState = searchWidgetState)
     }
   }
 }

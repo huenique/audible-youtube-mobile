@@ -8,22 +8,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import com.huenique.audibleyoutube.model.HomeViewModel
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.screen.MainScreen
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 
 class MainActivity : ComponentActivity() {
-  private val viewModel: HomeViewModel by viewModels()
   private val mainModel: MainViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
       AudibleYoutubeTheme {
-        // A surface container using the 'background' color from the theme
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-          MainScreen(mainModel, viewModel)
+          MainScreen(mainModel)
         }
       }
     }

@@ -16,10 +16,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huenique.audibleyoutube.R
+import com.huenique.audibleyoutube.model.MainViewModel
+import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.screen.main.MainVideoSearch
+import com.huenique.audibleyoutube.state.SearchWidgetState
 
 @Composable
-fun LibraryScreen() {
-  LibrarySelection()
+fun LibraryScreen(
+    searchWidgetState: SearchWidgetState,
+    viewModel: MainViewModel,
+    searchResultRepository: SearchResultRepository
+) {
+  when (searchWidgetState) {
+    SearchWidgetState.OPENED -> {
+      MainVideoSearch(viewModel = viewModel, searchResultRepository = searchResultRepository)
+    }
+    SearchWidgetState.CLOSED -> {
+      LibrarySelection()
+    }
+  }
 }
 
 @Composable
