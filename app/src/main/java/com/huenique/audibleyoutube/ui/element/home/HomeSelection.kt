@@ -23,58 +23,10 @@ import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 
 @Composable
-fun HomeMusicLibrary() {
+fun HomeSelection() {
   Column {
-    MainSelection()
     RecentlyPlayed()
     RecentlyAdded()
-  }
-}
-
-@Composable
-fun MainSelection() {
-  Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
-
-    // TopBar / Content separator
-    Box(modifier = Modifier.height(40.dp)) {}
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Icon(painter = painterResource(id = R.drawable.ic_library_music), contentDescription = null)
-
-      Column {
-        ClickableText(
-            text = AnnotatedString("All Songs"),
-            modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-            style =
-                TextStyle(
-                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
-                    fontSize = 20.sp),
-            onClick = {})
-        Divider(
-            Modifier.padding(start = 14.dp),
-            color = Color.Gray.copy(alpha = 0.6f),
-            thickness = 1.dp)
-      }
-    }
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
-
-      Column {
-        ClickableText(
-            text = AnnotatedString("Playlists"),
-            modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-            style =
-                TextStyle(
-                    color = if (isSystemInDarkTheme()) Color.White else Color.Black,
-                    fontSize = 20.sp),
-            onClick = {})
-        Divider(
-            Modifier.padding(start = 14.dp),
-            color = Color.Gray.copy(alpha = 0.6f),
-            thickness = 1.dp)
-      }
-    }
   }
 }
 
@@ -105,5 +57,5 @@ fun RecentlyAdded() {
 @Preview
 @Composable
 fun MusicLibraryPreview() {
-  AudibleYoutubeTheme { HomeMusicLibrary() }
+  AudibleYoutubeTheme { HomeSelection() }
 }

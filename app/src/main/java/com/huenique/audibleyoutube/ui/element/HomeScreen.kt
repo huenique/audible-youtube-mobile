@@ -18,7 +18,7 @@ fun HomeScreen(
       HomeSearch(viewModel = viewModel, searchResultRepository = searchResultRepository)
     }
     SearchWidgetState.CLOSED -> {
-      HomeMusicLibrary()
+      HomeSelection()
     }
   }
 }
