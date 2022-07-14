@@ -11,8 +11,10 @@ import com.huenique.audibleyoutube.component.NavBar
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.screen.main.MainTopAppBar
+import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ScreenNavigationState
 import com.huenique.audibleyoutube.state.SearchWidgetState
+import com.huenique.audibleyoutube.utils.MusicLibraryManager
 import com.huenique.audibleyoutube.utils.RepositoryGetter
 
 object NavigationRoute {
@@ -22,7 +24,11 @@ object NavigationRoute {
 }
 
 @Composable
-fun MainScreen(mainViewModel: MainViewModel) {
+fun MainScreen(
+    mainViewModel: MainViewModel,
+    audibleYoutube: AudibleYoutubeApi,
+    musicLibraryManager: MusicLibraryManager
+) {
   val navController = rememberNavController()
   val searchResultRepository = RepositoryGetter().searchResultRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
@@ -43,7 +49,9 @@ fun MainScreen(mainViewModel: MainViewModel) {
             mainViewModel = mainViewModel,
             searchResultRepository = searchResultRepository,
             searchWidgetState = searchWidgetState,
-            onNavigate = { mainViewModel.updateScreenNavState(newValue = it) })
+            onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
+            audibleYoutube = audibleYoutube,
+            musicLibraryManager = musicLibraryManager)
       },
       bottomBar = {
         NavBar(
@@ -60,6 +68,8 @@ fun MainNavHost(
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState,
     onNavigate: (ScreenNavigationState) -> Unit,
+    audibleYoutube: AudibleYoutubeApi,
+    musicLibraryManager: MusicLibraryManager
 ) {
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
@@ -67,18 +77,26 @@ fun MainNavHost(
       HomeScreen(
           viewModel = mainViewModel,
           searchResultRepository = searchResultRepository,
-          searchWidgetState = searchWidgetState)
+          searchWidgetState = searchWidgetState,
+          audibleYoutube = audibleYoutube,
+          musicLibraryManager = musicLibraryManager)
     }
     composable(NavigationRoute.SEARCH) {
       onNavigate(ScreenNavigationState.SEARCH)
-      SearchScreen(viewModel = mainViewModel, searchResultRepository = searchResultRepository)
+      SearchScreen(
+          viewModel = mainViewModel,
+          searchResultRepository = searchResultRepository,
+          audibleYoutube = audibleYoutube,
+          musicLibraryManager = musicLibraryManager)
     }
     composable(NavigationRoute.LIBRARY) {
       onNavigate(ScreenNavigationState.LIBRARY)
       LibraryScreen(
           viewModel = mainViewModel,
           searchResultRepository = searchResultRepository,
-          searchWidgetState = searchWidgetState)
+          searchWidgetState = searchWidgetState,
+          audibleYoutube = audibleYoutube,
+          musicLibraryManager = musicLibraryManager)
     }
   }
 }

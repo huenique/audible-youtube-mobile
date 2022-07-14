@@ -10,10 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +32,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun SearchView(
@@ -49,7 +46,7 @@ fun SearchView(
     isLoading: Boolean,
     onContentLoad: (Boolean) -> Unit,
     onMoreActionClicked: () -> Unit,
-    onAddToPlaylist: (String, File) -> Unit,
+    onAddToPlaylist: (String, File, File) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -201,7 +198,7 @@ fun MainDialogue(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
-    onAddToPlaylist: (String, File) -> Unit,
+    onAddToPlaylist: (String, File, File) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -221,7 +218,7 @@ fun MainDialogue(
 fun ResultDialogue(
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
-    onAddToPlaylist: (String, File) -> Unit,
+    onAddToPlaylist: (String, File, File) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -232,11 +229,17 @@ fun ResultDialogue(
 
   // TODO: Clean this later
   val createPlaylistDxState = remember { mutableStateOf(value = false) }
+  val playlistCreationState = remember { mutableStateOf(value = true) }
+  val playlistCreation by playlistCreationState
+
   PlaylistSelection(
       playlistState = playlistState,
+      playlistCreation = playlistCreation,
+      onPlaylistCreation = { playlistCreationState.value = it },
       onCreatePlaylist = { createPlaylistDxState.value = it },
-      onAddToPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
+      onSelectPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file, it) })
   CreatePlaylistDialogue(
+      onPlaylistCreation = { playlistCreationState.value = it },
       onCreateDxClose = { createPlaylistDxState.value = it },
       createPlaylistState = createPlaylistDxState.value)
 

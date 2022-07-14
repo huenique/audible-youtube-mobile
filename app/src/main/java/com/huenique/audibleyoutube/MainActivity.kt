@@ -10,17 +10,21 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.screen.MainScreen
+import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import com.huenique.audibleyoutube.utils.MusicLibraryManager
 
 class MainActivity : ComponentActivity() {
   private val mainModel: MainViewModel by viewModels()
+  private val audibleYoutube = AudibleYoutubeApi()
+  private val musicLibraryManager = MusicLibraryManager()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
       AudibleYoutubeTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-          MainScreen(mainModel)
+          MainScreen(mainModel, audibleYoutube, musicLibraryManager)
         }
       }
     }

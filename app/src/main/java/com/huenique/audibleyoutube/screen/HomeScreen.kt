@@ -17,19 +17,27 @@ import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
+import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import com.huenique.audibleyoutube.utils.MusicLibraryManager
 
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
-    searchWidgetState: SearchWidgetState
+    searchWidgetState: SearchWidgetState,
+    audibleYoutube: AudibleYoutubeApi,
+    musicLibraryManager: MusicLibraryManager
 ) {
 
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
-      MainVideoSearch(viewModel = viewModel, searchResultRepository = searchResultRepository)
+      MainVideoSearch(
+          viewModel = viewModel,
+          searchResultRepository = searchResultRepository,
+          audibleYoutube = audibleYoutube,
+          musicLibraryManager = musicLibraryManager)
     }
     SearchWidgetState.CLOSED -> {
       HomeSelection()

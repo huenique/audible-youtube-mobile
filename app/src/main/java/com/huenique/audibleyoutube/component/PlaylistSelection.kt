@@ -30,14 +30,19 @@ import java.io.File
 @Composable
 fun PlaylistSelection(
     playlistState: PlaylistState,
+    playlistCreation: Boolean,
+    onPlaylistCreation: (Boolean) -> Unit,
     onCreatePlaylist: ((Boolean) -> Unit)? = null,
-    onAddToPlaylist: (() -> Unit)? = null,
-    addToPlaylist: Boolean = false
+    onSelectPlaylist: ((File) -> Unit)? = null,
 ) {
   when (playlistState) {
     PlaylistState.OPENED -> {
-      if (onCreatePlaylist != null && onAddToPlaylist != null) {
-        PlaylistMenu(onCreatePlaylist = onCreatePlaylist, onAddToPlaylist = onAddToPlaylist)
+      if (onCreatePlaylist != null && onSelectPlaylist != null) {
+        PlaylistMenu(
+            playlistCreation = playlistCreation,
+            onPlaylistCreation = onPlaylistCreation,
+            onCreatePlaylist = onCreatePlaylist,
+            onSelectPlaylist = onSelectPlaylist)
       }
     }
     else -> {}
@@ -45,7 +50,15 @@ fun PlaylistSelection(
 }
 
 @Composable
-fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit, onAddToPlaylist: () -> Unit) {
+fun PlaylistMenu(
+    playlistCreation: Boolean,
+    onPlaylistCreation: (Boolean) -> Unit,
+    onCreatePlaylist: (Boolean) -> Unit,
+    onSelectPlaylist: ((File) -> Unit)?,
+) {
+  val context = LocalContext.current
+  val musicDir = Environment.DIRECTORY_MUSIC
+
   Box(modifier = Modifier.fillMaxSize().background(color = Color.White)) {
     Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
       Box(modifier = Modifier.height(40.dp)) {}
@@ -66,29 +79,41 @@ fun PlaylistMenu(onCreatePlaylist: (Boolean) -> Unit, onAddToPlaylist: () -> Uni
         }
       }
 
-      LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath?.let { it
-        ->
-        File(it).walk().forEach {
-          if (it.isFile) {
-            Playlist(it.nameWithoutExtension, onAddToPlaylist)
+      val playlists = remember { mutableListOf<File>() }
+
+      if (playlistCreation) {
+        playlists.clear()
+        context.getExternalFilesDir(musicDir)?.absolutePath?.let { it ->
+          File(it).walk().forEach {
+            if (it.extension == "m3u") {
+              playlists.add(it)
+            }
           }
         }
       }
+
+      playlists.forEach { Playlist(playlist = it, onSelectPlaylist = onSelectPlaylist) }
+      onPlaylistCreation(false)
     }
   }
 }
 
 @Composable
-fun Playlist(name: String, onAddToPlaylist: () -> Unit) {
+fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
 
     Column {
       ClickableText(
-          text = AnnotatedString(name),
+          text = AnnotatedString(playlist.nameWithoutExtension),
           modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-          style = TextStyle(fontSize = 20.sp),
-          onClick = { onAddToPlaylist() })
+          style = TextStyle(fontSize = 20.sp)) {
+        // #EXTINF:111, Sample artist name - Sample track title
+        // C:\Music\SampleMusic.mp3
+        if (onSelectPlaylist != null) {
+          onSelectPlaylist(playlist)
+        }
+      }
       Divider(
           Modifier.padding(start = 14.dp), color = Color.Gray.copy(alpha = 0.6f), thickness = 1.dp)
     }
@@ -96,7 +121,11 @@ fun Playlist(name: String, onAddToPlaylist: () -> Unit) {
 }
 
 @Composable
-fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistState: Boolean) {
+fun CreatePlaylistDialogue(
+    onPlaylistCreation: (Boolean) -> Unit,
+    onCreateDxClose: (Boolean) -> Unit,
+    createPlaylistState: Boolean
+) {
   if (createPlaylistState) {
     val playlistNameState = remember { mutableStateOf(TextFieldValue()) }
     val onPressOk = remember { mutableStateOf(value = "") }
@@ -167,7 +196,8 @@ fun CreatePlaylistDialogue(onCreateDxClose: (Boolean) -> Unit, createPlaylistSta
                     onPressOk.value = "$playlistName already exists"
                   }
 
-                  println(onPressOk.value)
+                  onCreateDxClose(false)
+                  onPlaylistCreation(true)
                 })
           }
         }
@@ -183,8 +213,9 @@ fun PlaylistContentPreview() {
   AudibleYoutubeTheme {
     PlaylistSelection(
         playlistState = PlaylistState.OPENED,
-        onCreatePlaylist = { state.value = true },
-        onAddToPlaylist = {})
+        playlistCreation = true,
+        {},
+        onCreatePlaylist = { state.value = true })
   }
 }
 
@@ -192,5 +223,8 @@ fun PlaylistContentPreview() {
 @Composable
 fun PlaylistPreview() {
   val state = remember { mutableStateOf(value = true) }
-  AudibleYoutubeTheme { CreatePlaylistDialogue({ state.value = it }, createPlaylistState = true) }
+  AudibleYoutubeTheme {
+    CreatePlaylistDialogue(
+        onPlaylistCreation = {}, onCreateDxClose = { state.value = it }, createPlaylistState = true)
+  }
 }
