@@ -34,7 +34,7 @@ fun PlaylistSelection(
     playlistCreation: Boolean,
     onPlaylistCreation: (Boolean) -> Unit,
     onCreatePlaylist: ((Boolean) -> Unit)? = null,
-    onSelectPlaylist: ((File) -> Unit)? = null,
+    onSelectPlaylist: ((File, String) -> Unit)? = null,
 ) {
   when (playlistState) {
     PlaylistState.OPENED -> {
@@ -55,7 +55,7 @@ fun PlaylistMenu(
     playlistCreation: Boolean,
     onPlaylistCreation: (Boolean) -> Unit,
     onCreatePlaylist: (Boolean) -> Unit,
-    onSelectPlaylist: ((File) -> Unit)?,
+    onSelectPlaylist: ((File, String) -> Unit)?,
 ) {
   val context = LocalContext.current
   val musicDir = Environment.DIRECTORY_MUSIC
@@ -87,7 +87,7 @@ fun PlaylistMenu(
         playlists.clear()
         context.getExternalFilesDir(musicDir)?.absolutePath?.let { it ->
           File(it).walk().forEach {
-            if (it.extension == "m3u") {
+            if (it.extension == "m3u" && it.nameWithoutExtension != "music_library") {
               playlists.add(it)
             }
           }
@@ -101,8 +101,7 @@ fun PlaylistMenu(
 }
 
 @Composable
-fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
-
+fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)?) {
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
 
@@ -110,12 +109,12 @@ fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
       ClickableText(
           text = AnnotatedString(playlist.nameWithoutExtension),
           modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-          style = TextStyle(fontSize = 20.sp),
-          onClick = {
-            if (onSelectPlaylist != null) {
-              onSelectPlaylist(playlist)
-            }
-          })
+          style = TextStyle(fontSize = 20.sp)
+      ) {
+        if (onSelectPlaylist != null) {
+          onSelectPlaylist(playlist, playlist.nameWithoutExtension)
+        }
+      }
       Divider(
           Modifier.padding(start = 14.dp), color = Color.Gray.copy(alpha = 0.6f), thickness = 1.dp)
     }
