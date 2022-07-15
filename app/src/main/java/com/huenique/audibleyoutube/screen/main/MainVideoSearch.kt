@@ -1,6 +1,8 @@
 package com.huenique.audibleyoutube.screen.main
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import com.huenique.audibleyoutube.component.SearchView
 import com.huenique.audibleyoutube.model.MainViewModel
@@ -20,7 +22,6 @@ fun MainVideoSearch(
 ) {
   val context = LocalContext.current
   val musicLibrary = musicLibraryManager.createMusicLibrary(context)
-  val audioFileState = remember { mutableStateOf(value = false) }
   val moreActionState = viewModel.moreActionState
   val searchRepositoryState by viewModel.searchRepositoryState
   val actionRepoState by viewModel.actionRepositoryState
@@ -41,8 +42,9 @@ fun MainVideoSearch(
       },
       onAddToPlaylist = { query: String, mediaSource: File, playlist: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(query, mediaSource)
-        musicLibraryManager.addMusicToPlaylist(context, playlist, mediaSource)
+        audibleYoutube.downloadVideo(query, mediaSource) {
+          musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource)
+        }
       },
       onCreatePlaylist = {
           externalFilesDir: File,
@@ -60,8 +62,7 @@ fun MainVideoSearch(
       },
       onDownloadVideo = { query: String, mediaSource: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(query, mediaSource) { audioFileState.value = true }
-        if (audioFileState.value) {
+        audibleYoutube.downloadVideo(query, mediaSource) {
           musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
         }
       },

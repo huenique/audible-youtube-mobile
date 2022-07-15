@@ -1,9 +1,8 @@
 package com.huenique.audibleyoutube.utils
 
 import android.content.Context
-import android.media.MediaPlayer
+import android.media.MediaMetadataRetriever
 import android.os.Environment
-import androidx.core.net.toUri
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -22,20 +21,15 @@ class MusicLibraryManager {
     return musicLibrary
   }
 
-  fun addMusicToLibrary(context: Context, musicLibrary: File, audioFilePath: File) {
-    val mediaPlayer = MediaPlayer.create(context, audioFilePath.toUri())
-    val musicLength = TimeUnit.MILLISECONDS.toSeconds(mediaPlayer!!.duration.toLong())
+  fun addMusicToLibrary(context: Context, m3uFile: File, audioFile: File) {
+    val metaRetriever = MediaMetadataRetriever()
+    metaRetriever.setDataSource(audioFile.absolutePath)
 
-    musicLibrary.appendText(
-        "\n#EXTINF:$musicLength,${audioFilePath.name}\n${audioFilePath.absolutePath}")
-  }
+    val musicLength =
+        metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong()
+    val duration = musicLength?.let { TimeUnit.MILLISECONDS.toSeconds(it.toLong()) }
 
-  fun addMusicToPlaylist(context: Context, playlistFilePath: File, audioFilePath: File) {
-    val mediaPlayer = MediaPlayer.create(context, audioFilePath.toUri())
-    val musicLength = TimeUnit.MILLISECONDS.toSeconds(mediaPlayer!!.duration.toLong())
-
-    playlistFilePath.appendText(
-        "\n#EXTINF:$musicLength,${audioFilePath.name}\n${audioFilePath.absolutePath}")
+    m3uFile.appendText("\n#EXTINF:$duration,${audioFile.name}\n${audioFile.absolutePath}")
   }
 
   fun removeMusicFromPlaylist() {}
