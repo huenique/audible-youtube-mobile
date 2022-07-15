@@ -109,8 +109,7 @@ fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)?) {
       ClickableText(
           text = AnnotatedString(playlist.nameWithoutExtension),
           modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-          style = TextStyle(fontSize = 20.sp)
-      ) {
+          style = TextStyle(fontSize = 20.sp)) {
         if (onSelectPlaylist != null) {
           onSelectPlaylist(playlist, playlist.nameWithoutExtension)
         }
