@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 class AudibleYoutubeApi {
   private val queryCount = 1
 
-  fun downloadVideo(query: String, file: File) {
+  fun downloadVideo(query: String, file: File, onSinkClose: (() -> Unit)? = null) {
     val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build()
     val request = Request.Builder().url(download.format(query)).build()
 
@@ -43,6 +43,9 @@ class AudibleYoutubeApi {
 
                   sink.writeAll(sourceBytes)
                   sink.close()
+                  if (onSinkClose != null) {
+                    onSinkClose()
+                  }
                 }
               }
             })

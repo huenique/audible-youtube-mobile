@@ -1,8 +1,6 @@
 package com.huenique.audibleyoutube.screen.main
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import com.huenique.audibleyoutube.component.SearchView
 import com.huenique.audibleyoutube.model.MainViewModel
@@ -21,6 +19,8 @@ fun MainVideoSearch(
     musicLibraryManager: MusicLibraryManager
 ) {
   val context = LocalContext.current
+  val musicLibrary = musicLibraryManager.createMusicLibrary(context)
+  val audioFileState = remember { mutableStateOf(value = false) }
   val moreActionState = viewModel.moreActionState
   val searchRepositoryState by viewModel.searchRepositoryState
   val actionRepoState by viewModel.actionRepositoryState
@@ -48,8 +48,7 @@ fun MainVideoSearch(
           externalFilesDir: File,
           playlistName: String,
           resultDialogue: MutableState<String> ->
-        val isPlaylistCreated =
-            musicLibraryManager.addPlaylist(externalFilesDir, playlistName, resultDialogue)
+        val isPlaylistCreated = musicLibraryManager.addPlaylist(externalFilesDir, playlistName)
         if (isPlaylistCreated) {
           resultDialogue.value = "$playlistName successfully created"
         } else {
@@ -58,5 +57,13 @@ fun MainVideoSearch(
       },
       onCloseDialogue = {
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-      }) { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) }
+      },
+      onDownloadVideo = { query: String, mediaSource: File ->
+        viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
+        audibleYoutube.downloadVideo(query, mediaSource) { audioFileState.value = true }
+        if (audioFileState.value) {
+          musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
+        }
+      },
+      onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
 }

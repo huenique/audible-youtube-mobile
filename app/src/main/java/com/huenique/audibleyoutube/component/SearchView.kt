@@ -49,7 +49,8 @@ fun SearchView(
     onAddToPlaylist: (String, File, File) -> Unit,
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
-    onPlaylistShow: () -> Unit,
+    onDownloadVideo: (String, File) -> Unit,
+    onPlaylistShow: () -> Unit
 ) {
   if (isLoading) PreLoader()
 
@@ -64,7 +65,8 @@ fun SearchView(
           onAddToPlaylist = onAddToPlaylist,
           onCreatePlaylist = onCreatePlaylist,
           onCloseDialogue = onCloseDialogue,
-          onPlaylistShow = onPlaylistShow)
+          onPlaylistShow = onPlaylistShow,
+          onDownloadVideo = onDownloadVideo)
     }
     SearchRepositoryState.DISPLAYED -> {
       if (!isLoading) DefaultContent()
@@ -146,7 +148,6 @@ fun ResultContent(
     moreActionState: SnapshotStateMap<String, String>,
     onMoreActionClicked: () -> Unit
 ) {
-
   // For the response structure, see
   // https://audible-youtube.herokuapp.com/docs#/videos/Search_search_get
   val playlist = json.getJSONArray("playlist")
@@ -204,6 +205,7 @@ fun MainDialogue(
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
+    onDownloadVideo: (String, File) -> Unit
 ) {
   when (actionRepoState) {
     ActionRepositoryState.OPENED ->
@@ -213,7 +215,8 @@ fun MainDialogue(
             onAddToPlaylist = onAddToPlaylist,
             onCreatePlaylist = onCreatePlaylist,
             onCloseDialogue = onCloseDialogue,
-            onPlaylistShow = onPlaylistShow)
+            onPlaylistShow = onPlaylistShow,
+            onDownloadVideo = onDownloadVideo)
     ActionRepositoryState.CLOSED -> {}
   }
 }
@@ -226,6 +229,7 @@ fun ResultDialogue(
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
+    onDownloadVideo: (String, File) -> Unit
 ) {
   val file =
       File(
@@ -262,19 +266,27 @@ fun ResultDialogue(
         Box(
             modifier =
                 Modifier.background(Color.DarkGray)
-                    .width(LocalConfiguration.current.screenWidthDp.dp / 2),
-            contentAlignment = Alignment.Center) {
-          ClickableText(
-              text = AnnotatedString("Add to Playlist"),
-              modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-              style = TextStyle(color = Color.White),
-              // onClick = { onAddToPlaylist(moreActionState["videoLink"].toString(), file) })
-              onClick = { onPlaylistShow() })
+                    .width(LocalConfiguration.current.screenWidthDp.dp / 2)) {
+          Column(modifier = Modifier.padding(start = 14.dp)) {
+            MoreActionOption(text = "Add to Playlist", onClick = onPlaylistShow)
+            MoreActionOption(
+                text = "Download",
+                onClick = { onDownloadVideo(moreActionState["videoLink"].toString(), file) })
+          }
         }
       }
     }
     else -> {}
   }
+}
+
+@Composable
+fun MoreActionOption(text: String, onClick: () -> Unit) {
+  ClickableText(
+      text = AnnotatedString(text),
+      modifier = Modifier.padding(top = 10.dp, bottom = 10.dp).fillMaxWidth(),
+      style = TextStyle(color = Color.White),
+      onClick = { onClick() })
 }
 
 @Preview
