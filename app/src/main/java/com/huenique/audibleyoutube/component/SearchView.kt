@@ -32,9 +32,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
-import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 @Composable
 fun SearchView(
@@ -237,7 +237,9 @@ fun ResultDialogue(
       playlistCreation = playlistCreation,
       onPlaylistCreation = { playlistCreationState.value = it },
       onCreatePlaylist = { createPlaylistDxState.value = it },
-      onSelectPlaylist = { onAddToPlaylist(moreActionState["videoLink"].toString(), file, it) })
+      onSelectPlaylist = { playlist: File ->
+        onAddToPlaylist(moreActionState["videoLink"].toString(), file, playlist)
+      })
   CreatePlaylistDialogue(
       onPlaylistCreation = { playlistCreationState.value = it },
       onCreateDxClose = { createPlaylistDxState.value = it },

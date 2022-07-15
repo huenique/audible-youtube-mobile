@@ -79,6 +79,7 @@ fun PlaylistMenu(
         }
       }
 
+      // TODO: Clean this
       val playlists = remember { mutableListOf<File>() }
 
       if (playlistCreation) {
@@ -100,6 +101,7 @@ fun PlaylistMenu(
 
 @Composable
 fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
+
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
 
@@ -107,13 +109,12 @@ fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
       ClickableText(
           text = AnnotatedString(playlist.nameWithoutExtension),
           modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-          style = TextStyle(fontSize = 20.sp)) {
-        // #EXTINF:111, Sample artist name - Sample track title
-        // C:\Music\SampleMusic.mp3
-        if (onSelectPlaylist != null) {
-          onSelectPlaylist(playlist)
-        }
-      }
+          style = TextStyle(fontSize = 20.sp),
+          onClick = {
+            if (onSelectPlaylist != null) {
+              onSelectPlaylist(playlist)
+            }
+          })
       Divider(
           Modifier.padding(start = 14.dp), color = Color.Gray.copy(alpha = 0.6f), thickness = 1.dp)
     }

@@ -38,13 +38,12 @@ fun MainVideoSearch(
         viewModel.updatePlaylistState(newValue = PlaylistState.PENDING)
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
       },
-      onAddToPlaylist = { query: String, file: File, playlist: File ->
+      onAddToPlaylist = { query: String, mediaSource: File, playlist: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(query, file)
-        musicLibraryManager.addMusicToPlaylist(context, playlist, file)
+        audibleYoutube.downloadVideo(query, mediaSource)
+        musicLibraryManager.addMusicToPlaylist(context, playlist, mediaSource)
       },
       onCloseDialogue = {
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-      },
-      onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
+      }) { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) }
 }
