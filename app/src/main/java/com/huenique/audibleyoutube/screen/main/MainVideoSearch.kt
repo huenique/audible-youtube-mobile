@@ -1,6 +1,7 @@
 package com.huenique.audibleyoutube.screen.main
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import com.huenique.audibleyoutube.component.SearchView
@@ -42,6 +43,18 @@ fun MainVideoSearch(
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
         audibleYoutube.downloadVideo(query, mediaSource)
         musicLibraryManager.addMusicToPlaylist(context, playlist, mediaSource)
+      },
+      onCreatePlaylist = {
+          externalFilesDir: File,
+          playlistName: String,
+          resultDialogue: MutableState<String> ->
+        val isPlaylistCreated =
+            musicLibraryManager.addPlaylist(externalFilesDir, playlistName, resultDialogue)
+        if (isPlaylistCreated) {
+          resultDialogue.value = "$playlistName successfully created"
+        } else {
+          resultDialogue.value = "$playlistName already exists"
+        }
       },
       onCloseDialogue = {
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)

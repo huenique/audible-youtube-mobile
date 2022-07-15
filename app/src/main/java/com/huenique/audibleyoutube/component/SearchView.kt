@@ -47,6 +47,7 @@ fun SearchView(
     onContentLoad: (Boolean) -> Unit,
     onMoreActionClicked: () -> Unit,
     onAddToPlaylist: (String, File, File) -> Unit,
+    onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -61,6 +62,7 @@ fun SearchView(
           moreActionState = moreActionState,
           playlistState = playlistState,
           onAddToPlaylist = onAddToPlaylist,
+          onCreatePlaylist = onCreatePlaylist,
           onCloseDialogue = onCloseDialogue,
           onPlaylistShow = onPlaylistShow)
     }
@@ -199,6 +201,7 @@ fun MainDialogue(
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
     onAddToPlaylist: (String, File, File) -> Unit,
+    onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -208,6 +211,7 @@ fun MainDialogue(
             moreActionState = moreActionState,
             playlistState = playlistState,
             onAddToPlaylist = onAddToPlaylist,
+            onCreatePlaylist = onCreatePlaylist,
             onCloseDialogue = onCloseDialogue,
             onPlaylistShow = onPlaylistShow)
     ActionRepositoryState.CLOSED -> {}
@@ -219,6 +223,7 @@ fun ResultDialogue(
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
     onAddToPlaylist: (String, File, File) -> Unit,
+    onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
     onPlaylistShow: () -> Unit,
 ) {
@@ -241,6 +246,7 @@ fun ResultDialogue(
         onAddToPlaylist(moreActionState["videoLink"].toString(), file, playlist)
       })
   CreatePlaylistDialogue(
+      onCreatePlaylist = onCreatePlaylist,
       onPlaylistCreation = { playlistCreationState.value = it },
       onCreateDxClose = { createPlaylistDxState.value = it },
       createPlaylistState = createPlaylistDxState.value)

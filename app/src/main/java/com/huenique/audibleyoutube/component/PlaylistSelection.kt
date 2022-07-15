@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -123,18 +124,16 @@ fun Playlist(playlist: File, onSelectPlaylist: ((File) -> Unit)?) {
 
 @Composable
 fun CreatePlaylistDialogue(
+    onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onPlaylistCreation: (Boolean) -> Unit,
     onCreateDxClose: (Boolean) -> Unit,
     createPlaylistState: Boolean
 ) {
   if (createPlaylistState) {
+    val context = LocalContext.current
     val playlistNameState = remember { mutableStateOf(TextFieldValue()) }
     val onPressOk = remember { mutableStateOf(value = "") }
     val playlistName = playlistNameState.value.text
-    val file =
-        File(
-            LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
-            "$playlistName.m3u")
 
     BoxWithConstraints(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
       Box(
@@ -187,19 +186,13 @@ fun CreatePlaylistDialogue(
                     TextStyle(
                         color = MaterialTheme.colors.secondary,
                         fontSize = 18.sp,
-                        textAlign = TextAlign.Center),
-                onClick = {
-                  val isPlaylistCreated = file.createNewFile()
-
-                  if (isPlaylistCreated) {
-                    onPressOk.value = "$playlistName successfully created"
-                  } else {
-                    onPressOk.value = "$playlistName already exists"
-                  }
-
-                  onCreateDxClose(false)
-                  onPlaylistCreation(true)
-                })
+                        textAlign = TextAlign.Center)) {
+              context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.let { externalFilesDir ->
+                onCreatePlaylist(externalFilesDir, playlistName, onPressOk)
+              }
+              onCreateDxClose(false)
+              onPlaylistCreation(true)
+            }
           }
         }
       }
@@ -226,6 +219,16 @@ fun PlaylistPreview() {
   val state = remember { mutableStateOf(value = true) }
   AudibleYoutubeTheme {
     CreatePlaylistDialogue(
-        onPlaylistCreation = {}, onCreateDxClose = { state.value = it }, createPlaylistState = true)
+        onPlaylistCreation = {},
+        onCreateDxClose = { state.value = it },
+        createPlaylistState = true,
+        onCreatePlaylist = {
+            externalFilesDir: File,
+            playlistName: String,
+            resultDialogue: MutableState<String> ->
+          println("$externalFilesDir, $playlistName, $resultDialogue")
+          resultDialogue.value = "$playlistName successfully created"
+          resultDialogue.value = "$playlistName already exists"
+        })
   }
 }
