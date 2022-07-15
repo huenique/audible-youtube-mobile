@@ -1,6 +1,7 @@
 package com.huenique.audibleyoutube.component
 
 import android.os.Environment
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -231,9 +232,10 @@ fun ResultDialogue(
     onPlaylistShow: () -> Unit,
     onDownloadVideo: (String, File) -> Unit
 ) {
+  val context = LocalContext.current
   val file =
       File(
-          LocalContext.current.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+          context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
           "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3")
 
   // TODO: Clean this later
@@ -246,8 +248,9 @@ fun ResultDialogue(
       playlistCreation = playlistCreation,
       onPlaylistCreation = { playlistCreationState.value = it },
       onCreatePlaylist = { createPlaylistDxState.value = it },
-      onSelectPlaylist = { playlist: File ->
+      onSelectPlaylist = { playlist: File, playlistName: String ->
         onAddToPlaylist(moreActionState["videoLink"].toString(), file, playlist)
+        Toast.makeText(context, "1 song added to $playlistName", Toast.LENGTH_SHORT).show()
       })
   CreatePlaylistDialogue(
       onCreatePlaylist = onCreatePlaylist,
