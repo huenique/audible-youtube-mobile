@@ -46,4 +46,18 @@ class MusicLibraryManager {
   }
 
   fun removePlayList() {}
+
+  fun getAllSongs(context: Context): MutableMap<String, String> {
+    val songs = mutableMapOf<String, String>()
+
+    context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath?.let { it ->
+      File(it).walk().forEach {
+        if (it.extension == "mp3") {
+          songs[it.nameWithoutExtension] = it.absolutePath
+        }
+      }
+    }
+
+    return songs
+  }
 }
