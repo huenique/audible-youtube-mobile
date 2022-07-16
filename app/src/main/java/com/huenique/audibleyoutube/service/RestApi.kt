@@ -1,5 +1,9 @@
 package com.huenique.audibleyoutube.service
 
+import android.content.Context
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.repository.Repository
 import okhttp3.*
 import okio.BufferedSink
@@ -12,7 +16,13 @@ import java.util.concurrent.TimeUnit
 class AudibleYoutubeApi {
   private val queryCount = 1
 
-  fun downloadVideo(query: String, file: File, onSinkClose: (() -> Unit)? = null) {
+  fun downloadVideo(
+      query: String,
+      file: File,
+      context: Context? = null,
+      builder: NotificationCompat.Builder? = null,
+      onSinkClose: (() -> Unit)? = null
+  ) {
     val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build()
     val request = Request.Builder().url(download.format(query)).build()
 
@@ -28,18 +38,46 @@ class AudibleYoutubeApi {
               override fun onResponse(call: Call, response: Response) {
                 response.use {
                   if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                  val sourceBytes = response.body!!.source()
+                  val respBody = response.body
+                  val sourceBytes = respBody!!.source()
                   val sink: BufferedSink = file.sink().buffer()
+
+                  // Create a unique int for the notification id
+                  val notificationId = (respBody.contentLength() + file.length()).toInt()
 
                   var totalRead: Long = 0
                   var lastRead: Long
 
-                  while (sourceBytes.read(sink.buffer, 8L * 1024).also { lastRead = it } != -1L) {
-                    totalRead += lastRead
-                    sink.emitCompleteSegments()
+                  if (context != null && builder != null) {
+                    NotificationManagerCompat.from(context).apply {
+                      builder.setContentTitle(file.nameWithoutExtension)
+                      builder.setContentText("Download in progress")
+                      builder.setProgress(
+                          respBody.contentLength().toInt(), totalRead.toInt(), false)
+                      notify(notificationId, builder.build())
 
-                    // TODO: Notify user of download progress
-                    println(totalRead)
+                      while (sourceBytes.read(sink.buffer, 8L * 1024).also { lastRead = it } !=
+                          -1L) {
+                        totalRead += lastRead
+                        sink.emitCompleteSegments()
+
+                        val contentLength = respBody.contentLength().toInt()
+                        val totalLength = totalRead.toInt()
+
+                        builder.setProgress(contentLength, totalLength, false)
+                        notify(notificationId, builder.build())
+                      }
+
+                      builder
+                          .setSmallIcon(R.drawable.ic_baseline_check)
+                          .setContentText("Download complete")
+                          .setProgress(0, 0, false)
+
+                      // For some reason, solely using setProgress() to update the notification does
+                      // not work. As a temporary workaround, we use cancel().
+                      cancel(notificationId)
+                      notify(notificationId, builder.build())
+                    }
                   }
 
                   sink.writeAll(sourceBytes)

@@ -22,6 +22,7 @@ import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.NotificationManager
 
 @Composable
 fun LibraryScreen(
@@ -29,7 +30,8 @@ fun LibraryScreen(
     viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
@@ -37,7 +39,8 @@ fun LibraryScreen(
           viewModel = viewModel,
           searchResultRepository = searchResultRepository,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager)
+          musicLibraryManager = musicLibraryManager,
+          notificationManager = notificationManager)
     }
     SearchWidgetState.CLOSED -> {
       LibrarySelection()

@@ -2,7 +2,9 @@ package com.huenique.audibleyoutube.screen
 
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,10 +33,15 @@ fun MainScreen(
     musicLibraryManager: MusicLibraryManager,
     notificationManager: NotificationManager
 ) {
+  val context = LocalContext.current
   val navController = rememberNavController()
   val searchResultRepository = RepositoryGetter().searchResultRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val screenNavigationState by mainViewModel.screenNavigationState
+
+  LaunchedEffect(Unit) {
+    notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
+  }
 
   Scaffold(
       topBar = {
@@ -53,7 +60,8 @@ fun MainScreen(
             searchWidgetState = searchWidgetState,
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
             audibleYoutube = audibleYoutube,
-            musicLibraryManager = musicLibraryManager)
+            musicLibraryManager = musicLibraryManager,
+            notificationManager = notificationManager)
       },
       bottomBar = {
         NavBar(
@@ -71,7 +79,8 @@ fun MainNavHost(
     searchWidgetState: SearchWidgetState,
     onNavigate: (ScreenNavigationState) -> Unit,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
@@ -81,7 +90,8 @@ fun MainNavHost(
           searchResultRepository = searchResultRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager)
+          musicLibraryManager = musicLibraryManager,
+          notificationManager = notificationManager)
     }
     composable(NavigationRoute.SEARCH) {
       onNavigate(ScreenNavigationState.SEARCH)
@@ -89,7 +99,8 @@ fun MainNavHost(
           viewModel = mainViewModel,
           searchResultRepository = searchResultRepository,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager)
+          musicLibraryManager = musicLibraryManager,
+          notificationManager = notificationManager)
     }
     composable(NavigationRoute.LIBRARY) {
       onNavigate(ScreenNavigationState.LIBRARY)
@@ -98,7 +109,8 @@ fun MainNavHost(
           searchResultRepository = searchResultRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager)
+          musicLibraryManager = musicLibraryManager,
+          notificationManager = notificationManager)
     }
   }
 }

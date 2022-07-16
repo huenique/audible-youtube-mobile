@@ -6,17 +6,20 @@ import com.huenique.audibleyoutube.repository.SearchResultRepository
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.NotificationManager
 
 @Composable
 fun SearchScreen(
     viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
   MainVideoSearch(
       viewModel = viewModel,
       searchResultRepository = searchResultRepository,
       audibleYoutube = audibleYoutube,
-      musicLibraryManager = musicLibraryManager)
+      musicLibraryManager = musicLibraryManager,
+      notificationManager = notificationManager)
 }

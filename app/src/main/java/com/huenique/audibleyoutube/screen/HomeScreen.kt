@@ -21,6 +21,7 @@ import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.NotificationManager
 
 @Composable
 fun HomeScreen(
@@ -28,16 +29,17 @@ fun HomeScreen(
     searchResultRepository: SearchResultRepository,
     searchWidgetState: SearchWidgetState,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
-
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
       MainVideoSearch(
           viewModel = viewModel,
           searchResultRepository = searchResultRepository,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager)
+          musicLibraryManager = musicLibraryManager,
+          notificationManager = notificationManager)
     }
     SearchWidgetState.CLOSED -> {
       HomeSelection()

@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationCompat
+import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.component.SearchView
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.SearchResultRepository
@@ -11,6 +13,7 @@ import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.NotificationManager
 import java.io.File
 
 @Composable
@@ -18,7 +21,8 @@ fun MainVideoSearch(
     viewModel: MainViewModel,
     searchResultRepository: SearchResultRepository,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
   val context = LocalContext.current
   val musicLibrary = musicLibraryManager.createMusicLibrary(context)
@@ -27,6 +31,12 @@ fun MainVideoSearch(
   val actionRepoState by viewModel.actionRepositoryState
   val isLoading by viewModel.isLoading
   val playlistState by viewModel.playlistState
+
+  val builder =
+      NotificationCompat.Builder(context, "AudibleYouTubeChannel").apply {
+        setSmallIcon(R.drawable.ic_cloud_download)
+        priority = NotificationCompat.PRIORITY_LOW
+      }
 
   SearchView(
       actionRepoState = actionRepoState,
@@ -42,9 +52,10 @@ fun MainVideoSearch(
       },
       onAddToPlaylist = { query: String, mediaSource: File, playlist: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(query, mediaSource) {
-          musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource)
-        }
+        audibleYoutube.downloadVideo(
+            query,
+            mediaSource,
+            onSinkClose = { musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource) })
       },
       onCreatePlaylist = {
           externalFilesDir: File,
@@ -63,8 +74,13 @@ fun MainVideoSearch(
       onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) },
       onDownloadVideo = { query: String, mediaSource: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(query, mediaSource) {
-          musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
-        }
+        audibleYoutube.downloadVideo(
+            query,
+            mediaSource,
+            context = context,
+            builder = builder,
+            onSinkClose = {
+              musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
+            })
       })
 }
