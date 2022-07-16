@@ -53,8 +53,10 @@ fun MainVideoSearch(
       onAddToPlaylist = { query: String, mediaSource: File, playlist: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
         audibleYoutube.downloadVideo(
-            query,
-            mediaSource,
+            query = query,
+            file = mediaSource,
+            context = context,
+            builder = builder,
             onSinkClose = { musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource) })
       },
       onCreatePlaylist = {
@@ -75,8 +77,8 @@ fun MainVideoSearch(
       onDownloadVideo = { query: String, mediaSource: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
         audibleYoutube.downloadVideo(
-            query,
-            mediaSource,
+            query = query,
+            file = mediaSource,
             context = context,
             builder = builder,
             onSinkClose = {
