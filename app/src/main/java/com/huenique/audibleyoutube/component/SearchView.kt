@@ -50,8 +50,8 @@ fun SearchView(
     onAddToPlaylist: (String, File, File) -> Unit,
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
-    onDownloadVideo: (String, File) -> Unit,
-    onPlaylistShow: () -> Unit
+    onPlaylistShow: () -> Unit,
+    onDownloadVideo: (String, File) -> Unit
 ) {
   if (isLoading) PreLoader()
 

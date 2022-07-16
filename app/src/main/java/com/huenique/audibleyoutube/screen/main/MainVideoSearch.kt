@@ -60,11 +60,11 @@ fun MainVideoSearch(
       onCloseDialogue = {
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
       },
+      onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) },
       onDownloadVideo = { query: String, mediaSource: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
         audibleYoutube.downloadVideo(query, mediaSource) {
           musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
         }
-      },
-      onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) })
+      })
 }

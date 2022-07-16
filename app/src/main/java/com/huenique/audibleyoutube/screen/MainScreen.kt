@@ -15,6 +15,7 @@ import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ScreenNavigationState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.NotificationManager
 import com.huenique.audibleyoutube.utils.RepositoryGetter
 
 object NavigationRoute {
@@ -27,7 +28,8 @@ object NavigationRoute {
 fun MainScreen(
     mainViewModel: MainViewModel,
     audibleYoutube: AudibleYoutubeApi,
-    musicLibraryManager: MusicLibraryManager
+    musicLibraryManager: MusicLibraryManager,
+    notificationManager: NotificationManager
 ) {
   val navController = rememberNavController()
   val searchResultRepository = RepositoryGetter().searchResultRepository()
