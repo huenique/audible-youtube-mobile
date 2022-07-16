@@ -26,8 +26,6 @@ import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import java.io.File
 
-// TODO: Impl higher level fn than PlaylistContent
-
 @Composable
 fun PlaylistSelection(
     playlistState: PlaylistState,
@@ -70,7 +68,8 @@ fun PlaylistMenu(
         Column {
           ClickableText(
               text = AnnotatedString("Create New"),
-              modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
+              modifier =
+                  Modifier.fillMaxWidth().padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
               style = TextStyle(fontSize = 20.sp),
               onClick = { onCreatePlaylist(true) })
           Divider(
@@ -80,7 +79,8 @@ fun PlaylistMenu(
         }
       }
 
-      // TODO: Clean this
+      // TODO: Clean this?
+      // Collect m3u or audio playlist files inside a specified directory
       val playlists = remember { mutableListOf<File>() }
 
       if (playlistCreation) {
@@ -101,14 +101,14 @@ fun PlaylistMenu(
 }
 
 @Composable
-fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)?) {
+fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)? = null) {
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
 
     Column {
       ClickableText(
           text = AnnotatedString(playlist.nameWithoutExtension),
-          modifier = Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
+          modifier = Modifier.fillMaxWidth().padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
           style = TextStyle(fontSize = 20.sp)) {
         if (onSelectPlaylist != null) {
           onSelectPlaylist(playlist, playlist.nameWithoutExtension)
@@ -198,22 +198,15 @@ fun CreatePlaylistDialogue(
   }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
+@Preview
 @Composable
-fun PlaylistContentPreview() {
-  val state = remember { mutableStateOf(value = true) }
-  AudibleYoutubeTheme {
-    PlaylistSelection(
-        playlistState = PlaylistState.OPENED,
-        playlistCreation = true,
-        {},
-        onCreatePlaylist = { state.value = true })
-  }
+fun PlaylistPreview() {
+  AudibleYoutubeTheme { Playlist(File("", "")) }
 }
 
 @Preview
 @Composable
-fun PlaylistPreview() {
+fun CreatePlaylistDialoguePreview() {
   val state = remember { mutableStateOf(value = true) }
   AudibleYoutubeTheme {
     CreatePlaylistDialogue(
