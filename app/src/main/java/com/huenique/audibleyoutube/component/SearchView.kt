@@ -33,9 +33,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun SearchView(
@@ -169,9 +169,9 @@ fun ResultContent(
           AsyncImage(model = thumbnail, contentDescription = null, contentScale = ContentScale.Crop)
         }
 
-        Column(modifier = Modifier.padding(start = 6.dp).width(230.dp).fillMaxHeight()) {
+        Column(modifier = Modifier.padding(start = 6.dp).weight(1f).fillMaxHeight()) {
           Text(
-              videoTitle,
+              text = videoTitle,
               fontSize = 14.sp,
               fontWeight = FontWeight.Bold,
               overflow = TextOverflow.Ellipsis,
@@ -189,7 +189,7 @@ fun ResultContent(
             }) {
           Icon(
               imageVector = Icons.Rounded.MoreVert,
-              modifier = Modifier.size(128.dp),
+              modifier = Modifier.size(24.dp),
               contentDescription = "More Action")
         }
       }
