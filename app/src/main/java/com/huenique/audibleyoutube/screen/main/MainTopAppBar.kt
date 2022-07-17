@@ -36,6 +36,9 @@ fun MainTopAppBar(
             ScreenNavigationState.LIBRARY -> {
               navigationRoute.LIBRARY
             }
+            else -> {
+              ""
+            }
           })
           .replaceFirstChar { it.titlecase() }
 

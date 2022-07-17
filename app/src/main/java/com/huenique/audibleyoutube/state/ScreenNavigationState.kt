@@ -3,5 +3,6 @@ package com.huenique.audibleyoutube.state
 enum class ScreenNavigationState {
   HOME,
   SEARCH,
-  LIBRARY
+  LIBRARY,
+  ALL_SONGS
 }

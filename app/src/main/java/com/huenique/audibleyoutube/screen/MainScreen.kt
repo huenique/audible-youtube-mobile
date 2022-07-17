@@ -2,13 +2,15 @@ package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
 import androidx.compose.material.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.huenique.audibleyoutube.component.NavBar
 import com.huenique.audibleyoutube.model.MainViewModel
@@ -26,6 +28,7 @@ object NavigationRoute {
   const val HOME = "home"
   const val SEARCH = "search"
   const val LIBRARY = "library"
+  const val ALL_SONGS = "allSongs"
 }
 
 @Composable
@@ -38,7 +41,13 @@ fun MainScreen(
     mediaPlayer: MediaPlayer
 ) {
   val context = LocalContext.current
+
+  // Navigation controller
   val navController = rememberNavController()
+  val navBackStackEntry by navController.currentBackStackEntryAsState()
+  var showBottomBar by rememberSaveable { mutableStateOf(value = true) }
+
+  // View model states and dependencies
   val httpResponseRepo = RepositoryGetter().httpResponseRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val screenNavigationState by mainViewModel.screenNavigationState
@@ -47,15 +56,25 @@ fun MainScreen(
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
   }
 
+  showBottomBar =
+      when (navBackStackEntry?.destination?.route) {
+        NavigationRoute.ALL_SONGS -> false
+        else -> true
+      }
+
   Scaffold(
       topBar = {
-        MainTopAppBar(
-            viewModel = mainViewModel,
-            httpResponseRepository = httpResponseRepo,
-            searchWidgetState = searchWidgetState,
-            screenNavigationState = screenNavigationState,
-            navigationRoute = NavigationRoute,
-            httpResponseHandler = httpResponseHandler)
+        when (navBackStackEntry?.destination?.route) {
+          NavigationRoute.ALL_SONGS -> TopAppBar(title = { Text(text = "All songs") })
+          else ->
+              MainTopAppBar(
+                  viewModel = mainViewModel,
+                  httpResponseRepository = httpResponseRepo,
+                  searchWidgetState = searchWidgetState,
+                  screenNavigationState = screenNavigationState,
+                  navigationRoute = NavigationRoute,
+                  httpResponseHandler = httpResponseHandler)
+        }
       },
       content = {
         MainNavHost(
@@ -71,10 +90,11 @@ fun MainScreen(
         )
       },
       bottomBar = {
-        NavBar(
-            onHomeClick = { navController.navigate(NavigationRoute.HOME) },
-            onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
-            onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
+        if (showBottomBar)
+            NavBar(
+                onHomeClick = { navController.navigate(NavigationRoute.HOME) },
+                onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
+                onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
       })
 }
 
@@ -119,7 +139,12 @@ fun MainNavHost(
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
           httpResponseHandler = httpResponseHandler,
-          mediaPlayer = mediaPlayer)
+          onClickAllSongs = { navController.navigate(NavigationRoute.ALL_SONGS) })
+    }
+    composable(NavigationRoute.ALL_SONGS) {
+      onNavigate(ScreenNavigationState.ALL_SONGS)
+      val songs = musicLibraryManager.getAllSongs(LocalContext.current)
+      AllSongs(viewModel = mainViewModel, songs = songs, mediaPlayer = mediaPlayer)
     }
   }
 }

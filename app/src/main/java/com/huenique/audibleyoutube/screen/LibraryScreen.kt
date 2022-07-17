@@ -1,7 +1,6 @@
 package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -35,10 +34,10 @@ import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 @Composable
 fun LibraryScreen(
@@ -48,7 +47,7 @@ fun LibraryScreen(
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
     httpResponseHandler: HttpResponseHandler,
-    mediaPlayer: MediaPlayer
+    onClickAllSongs: () -> Unit
 ) {
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
@@ -60,29 +59,17 @@ fun LibraryScreen(
           httpResponseHandler = httpResponseHandler)
     }
     SearchWidgetState.CLOSED -> {
-      var librarySelectionState by remember { mutableStateOf(value = 0) }
-
-      when (librarySelectionState) {
-        1 -> BackHandler(enabled = true) { librarySelectionState = 0 }
-      }
-
-      when (librarySelectionState) {
-        0 -> LibrarySelection(onAllSongsClick = { librarySelectionState = 1 })
-        1 -> {
-          val songs = musicLibraryManager.getAllSongs(LocalContext.current)
-          AllSongs(viewModel = viewModel, songs = songs, mediaPlayer = mediaPlayer)
-        }
-      }
+      LibrarySelection(onClickAllSongs = onClickAllSongs)
     }
   }
 }
 
 @Composable
-fun LibrarySelection(onAllSongsClick: () -> Unit) {
+fun LibrarySelection(onClickAllSongs: () -> Unit) {
   Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
     Box(modifier = Modifier.height(40.dp)) {}
     LibraryOption(
-        title = "All Songs", resourceId = R.drawable.ic_library_music, onClick = onAllSongsClick)
+        title = "All songs", resourceId = R.drawable.ic_library_music, onClick = onClickAllSongs)
     LibraryOption(title = "Playlists", resourceId = R.drawable.ic_playlist, onClick = {})
   }
 }
