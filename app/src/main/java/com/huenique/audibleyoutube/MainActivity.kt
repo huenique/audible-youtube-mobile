@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
   private val musicLibraryManager = MusicLibraryManager()
   private val notificationManager = NotificationManager()
   private val httpResponseHandler = HttpResponseHandler()
+  private val mediaPlayer = MediaPlayer()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -34,7 +36,8 @@ class MainActivity : ComponentActivity() {
               audibleYoutube,
               musicLibraryManager,
               notificationManager,
-              httpResponseHandler)
+              httpResponseHandler,
+              mediaPlayer)
         }
       }
     }

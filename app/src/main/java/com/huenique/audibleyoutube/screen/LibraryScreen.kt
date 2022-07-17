@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.screen
 
+import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -22,18 +23,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.lifecycle.viewModelScope
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun LibraryScreen(
@@ -42,7 +47,8 @@ fun LibraryScreen(
     httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
-    httpResponseHandler: HttpResponseHandler
+    httpResponseHandler: HttpResponseHandler,
+    mediaPlayer: MediaPlayer
 ) {
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
@@ -64,7 +70,7 @@ fun LibraryScreen(
         0 -> LibrarySelection(onAllSongsClick = { librarySelectionState = 1 })
         1 -> {
           val songs = musicLibraryManager.getAllSongs(LocalContext.current)
-          AllSongs(songs = songs)
+          AllSongs(viewModel = viewModel, songs = songs, mediaPlayer = mediaPlayer)
         }
       }
     }
@@ -82,26 +88,40 @@ fun LibrarySelection(onAllSongsClick: () -> Unit) {
 }
 
 @Composable
-fun AllSongs(songs: MutableMap<String, String>) {
+fun AllSongs(
+    viewModel: MainViewModel,
+    songs: MutableMap<String, String>,
+    mediaPlayer: MediaPlayer
+) {
+  val context = LocalContext.current
+
   // Adding a song to this list will prevent creating multiple playing indicators or pause icons.
+  // TODO: Move this to main view model
   var currentlyPlaying by remember { mutableStateOf(value = "") }
 
   Column(
       modifier =
           Modifier.padding(start = 14.dp, end = 14.dp).verticalScroll(rememberScrollState())) {
     Box(modifier = Modifier.height(40.dp)) {}
-    for (key in songs.keys) {
+
+    songs.forEach { song ->
       Song(
-          title = key,
+          title = song.key,
           currentlyPlaying = currentlyPlaying,
           onClick = {
-            // TODO: temp solution to hide pause icon/playing indicator
-            // The media player should pop up
             if (currentlyPlaying.isNotEmpty()) {
               currentlyPlaying = ""
             }
+            currentlyPlaying = song.key
 
-            currentlyPlaying = key
+            viewModel.viewModelScope.launch {
+              withContext(Dispatchers.IO) {
+                mediaPlayer.reset()
+                mediaPlayer.setDataSource(context, File(song.value).toUri())
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+              }
+            }
           },
           onMoreActionClicked = {})
     }
@@ -139,11 +159,7 @@ fun Song(
 ) {
   Row(
       modifier =
-          Modifier.clickable(
-                  onClick = {
-                    onClick()
-                    println(currentlyPlaying)
-                  })
+          Modifier.clickable(onClick = { onClick() })
               .padding(top = 10.dp, bottom = 10.dp)
               .fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically) {
@@ -170,30 +186,4 @@ fun Song(
     }
   }
   Divider(color = Color.Gray.copy(alpha = 0.6f), thickness = 1.dp)
-}
-
-@Preview
-@Composable
-fun LibrarySelectionPreview() {
-  LibrarySelection {}
-}
-
-@Preview
-@Composable
-fun SongPreview() {
-  //  AudibleYoutubeTheme { Song("Song title", {}, {}) }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun AllSongsPreview() {
-  val songs = mutableMapOf<String, String>()
-  for (i in 0..5) {
-    songs[
-        "Lorem ipsum dolor sit amet," +
-            "consectetur adipiscing elit," +
-            "sed do eiusmod tempor incididunt" +
-            "ut labore et dolore magna aliqua. $i"] = "path/to/song"
-  }
-  AudibleYoutubeTheme { AllSongs(songs) }
 }

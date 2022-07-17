@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.screen
 
+import android.media.MediaPlayer
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +34,8 @@ fun MainScreen(
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
     notificationManager: NotificationManager,
-    httpResponseHandler: HttpResponseHandler
+    httpResponseHandler: HttpResponseHandler,
+    mediaPlayer: MediaPlayer
 ) {
   val context = LocalContext.current
   val navController = rememberNavController()
@@ -64,7 +66,9 @@ fun MainScreen(
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
             audibleYoutube = audibleYoutube,
             musicLibraryManager = musicLibraryManager,
-            httpResponseHandler = httpResponseHandler)
+            httpResponseHandler = httpResponseHandler,
+            mediaPlayer = mediaPlayer,
+        )
       },
       bottomBar = {
         NavBar(
@@ -83,7 +87,8 @@ fun MainNavHost(
     onNavigate: (ScreenNavigationState) -> Unit,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
-    httpResponseHandler: HttpResponseHandler
+    httpResponseHandler: HttpResponseHandler,
+    mediaPlayer: MediaPlayer
 ) {
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
@@ -113,7 +118,8 @@ fun MainNavHost(
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
-          httpResponseHandler = httpResponseHandler)
+          httpResponseHandler = httpResponseHandler,
+          mediaPlayer = mediaPlayer)
     }
   }
 }
