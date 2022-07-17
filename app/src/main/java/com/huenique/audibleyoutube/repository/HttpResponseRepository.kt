@@ -1,6 +1,6 @@
 package com.huenique.audibleyoutube.repository
 
-class SearchResultRepository : Repository<String> {
+class HttpResponseRepository : Repository<String> {
   private var content = "{}"
 
   override fun getAll(): String {

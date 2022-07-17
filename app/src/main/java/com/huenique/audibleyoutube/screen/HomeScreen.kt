@@ -15,31 +15,31 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
-import com.huenique.audibleyoutube.utils.NotificationManager
 
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel,
-    searchResultRepository: SearchResultRepository,
+    httpResponseRepository: HttpResponseRepository,
     searchWidgetState: SearchWidgetState,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
-    notificationManager: NotificationManager
+    httpResponseHandler: HttpResponseHandler
 ) {
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
       MainVideoSearch(
           viewModel = viewModel,
-          searchResultRepository = searchResultRepository,
+          httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
-          notificationManager = notificationManager)
+          httpResponseHandler = httpResponseHandler)
     }
     SearchWidgetState.CLOSED -> {
       HomeSelection()

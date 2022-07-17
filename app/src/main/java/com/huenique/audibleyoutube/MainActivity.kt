@@ -12,6 +12,7 @@ import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.screen.MainScreen
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
 import com.huenique.audibleyoutube.utils.NotificationManager
 
@@ -20,6 +21,7 @@ class MainActivity : ComponentActivity() {
   private val audibleYoutube = AudibleYoutubeApi()
   private val musicLibraryManager = MusicLibraryManager()
   private val notificationManager = NotificationManager()
+  private val httpResponseHandler = HttpResponseHandler()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -27,7 +29,12 @@ class MainActivity : ComponentActivity() {
     setContent {
       AudibleYoutubeTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-          MainScreen(mainModel, audibleYoutube, musicLibraryManager, notificationManager)
+          MainScreen(
+              mainModel,
+              audibleYoutube,
+              musicLibraryManager,
+              notificationManager,
+              httpResponseHandler)
         }
       }
     }

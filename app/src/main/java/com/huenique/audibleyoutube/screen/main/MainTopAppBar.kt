@@ -4,25 +4,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.huenique.audibleyoutube.component.TopBar
 import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.NavigationRoute
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
+import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.ScreenNavigationState
-import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.state.SearchWidgetState
+import com.huenique.audibleyoutube.utils.HttpResponseHandler
 
 @Composable
 fun MainTopAppBar(
     viewModel: MainViewModel,
-    searchResultRepository: SearchResultRepository,
+    httpResponseRepository: HttpResponseRepository,
     searchWidgetState: SearchWidgetState,
     screenNavigationState: ScreenNavigationState,
-    navigationRoute: NavigationRoute
+    navigationRoute: NavigationRoute,
+    httpResponseHandler: HttpResponseHandler
 ) {
   val audibleYoutube = AudibleYoutubeApi()
   val searchTextState by viewModel.searchTextState
-  val searchRepositoryState by viewModel.searchRepositoryState
+  val httpResponseRepoState by viewModel.httpResponseRepositoryState
   val topBarTitle =
       (when (screenNavigationState) {
             ScreenNavigationState.HOME -> {
@@ -47,28 +49,19 @@ fun MainTopAppBar(
         viewModel.updateSpinnerState(newValue = false)
 
         // Reset repos to prevent memory hogging
-        viewModel.updateSearchRepoState(newValue = SearchRepositoryState.INTERRUPTED)
-        searchResultRepository.update(value = "{}")
+        viewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.INTERRUPTED)
+        httpResponseRepository.update(value = "{}")
       },
       onSearchClicked = {
-        viewModel.updateSearchRepoState(newValue = SearchRepositoryState.DISPLAYED)
+        viewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.DISPLAYED)
         viewModel.updateSpinnerState(newValue = true)
 
         audibleYoutube.searchVideo(
             query = it,
-            responseRepo = searchResultRepository,
+            responseRepo = httpResponseRepository,
             callbackFn = {
-              when (searchRepositoryState) {
-                SearchRepositoryState.DISPLAYED -> {
-                  viewModel.updateSearchRepoState(newValue = SearchRepositoryState.CHANGED)
-                }
-                SearchRepositoryState.INTERRUPTED -> {
-                  // Forget search results and rest search repo state
-                  searchResultRepository.update(value = "{}")
-                  viewModel.updateSearchRepoState(newValue = SearchRepositoryState.DISPLAYED)
-                }
-                else -> {}
-              }
+              httpResponseHandler.onHttpError(
+                  viewModel, httpResponseRepoState, httpResponseRepository)
             })
       },
       onSearchTriggered = {

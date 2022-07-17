@@ -1,9 +1,9 @@
 package com.huenique.audibleyoutube.utils
 
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 
 class RepositoryGetter {
-  fun searchResultRepository(): SearchResultRepository {
-    return SearchResultRepository()
+  fun httpResponseRepository(): HttpResponseRepository {
+    return HttpResponseRepository()
   }
 }

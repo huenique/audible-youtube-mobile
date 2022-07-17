@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.screen.main
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -8,29 +9,31 @@ import androidx.core.app.NotificationCompat
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.component.SearchView
 import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
+import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
-import com.huenique.audibleyoutube.utils.NotificationManager
 import java.io.File
 
 @Composable
 fun MainVideoSearch(
     viewModel: MainViewModel,
-    searchResultRepository: SearchResultRepository,
+    httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
-    notificationManager: NotificationManager
+    httpResponseHandler: HttpResponseHandler
 ) {
   val context = LocalContext.current
   val musicLibrary = musicLibraryManager.createMusicLibrary(context)
   val moreActionState = viewModel.moreActionState
-  val searchRepositoryState by viewModel.searchRepositoryState
+
+  val httpResponseRepoState by viewModel.httpResponseRepositoryState
   val actionRepoState by viewModel.actionRepositoryState
   val isLoading by viewModel.isLoading
   val playlistState by viewModel.playlistState
+  val successResponseState by viewModel.successResponseState
 
   val builder =
       NotificationCompat.Builder(context, "AudibleYouTubeChannel").apply {
@@ -38,12 +41,20 @@ fun MainVideoSearch(
         priority = NotificationCompat.PRIORITY_LOW
       }
 
+  when (successResponseState) {
+    false -> {
+      Toast.makeText(context, "The selected video is too long!", Toast.LENGTH_SHORT).show()
+      viewModel.updateSuccessResponseState(newValue = true)
+    }
+  }
+
   SearchView(
       actionRepoState = actionRepoState,
       moreActionState = moreActionState,
-      searchResultRepoState = searchRepositoryState,
-      searchResultRepo = searchResultRepository,
+      searchResultRepoState = httpResponseRepoState,
+      searchResultRepo = httpResponseRepository,
       playlistState = playlistState,
+      successResponseState = successResponseState,
       isLoading = isLoading,
       onContentLoad = { viewModel.updateSpinnerState(newValue = it) },
       onMoreActionClicked = {
@@ -55,6 +66,12 @@ fun MainVideoSearch(
         audibleYoutube.downloadVideo(
             query = query,
             file = mediaSource,
+            responseRepo = httpResponseRepository,
+            onFailure = {
+              httpResponseHandler.onHttpError(
+                  viewModel, httpResponseRepoState, httpResponseRepository)
+            },
+            onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
             context = context,
             builder = builder,
             onSinkClose = { musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource) })
@@ -79,6 +96,12 @@ fun MainVideoSearch(
         audibleYoutube.downloadVideo(
             query = query,
             file = mediaSource,
+            responseRepo = httpResponseRepository,
+            onFailure = {
+              httpResponseHandler.onHttpError(
+                  viewModel, httpResponseRepoState, httpResponseRepository)
+            },
+            onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
             context = context,
             builder = builder,
             onSinkClose = {

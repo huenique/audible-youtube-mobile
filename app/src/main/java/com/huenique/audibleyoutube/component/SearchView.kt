@@ -28,22 +28,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.state.ActionRepositoryState
+import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
-import com.huenique.audibleyoutube.state.SearchRepositoryState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
-import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 @Composable
 fun SearchView(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
-    searchResultRepoState: SearchRepositoryState,
+    searchResultRepoState: HttpResponseRepositoryState,
     playlistState: PlaylistState,
-    searchResultRepo: SearchResultRepository,
+    successResponseState: Boolean,
+    searchResultRepo: HttpResponseRepository,
     isLoading: Boolean,
     onContentLoad: (Boolean) -> Unit,
     onMoreActionClicked: () -> Unit,
@@ -56,20 +57,21 @@ fun SearchView(
   if (isLoading) PreLoader()
 
   when (searchResultRepoState) {
-    SearchRepositoryState.CHANGED -> {
+    HttpResponseRepositoryState.CHANGED -> {
       onContentLoad(false)
       VariableContent(searchResultRepo, moreActionState, onMoreActionClicked)
       MainDialogue(
           actionRepoState = actionRepoState,
           moreActionState = moreActionState,
           playlistState = playlistState,
+          successResponseState = successResponseState,
           onAddToPlaylist = onAddToPlaylist,
           onCreatePlaylist = onCreatePlaylist,
           onCloseDialogue = onCloseDialogue,
           onPlaylistShow = onPlaylistShow,
           onDownloadVideo = onDownloadVideo)
     }
-    SearchRepositoryState.DISPLAYED -> {
+    HttpResponseRepositoryState.DISPLAYED -> {
       if (!isLoading) DefaultContent()
     }
     else -> {}
@@ -100,7 +102,7 @@ fun PreLoader() {
 
 @Composable
 fun VariableContent(
-    searchResultRepo: SearchResultRepository,
+    searchResultRepo: HttpResponseRepository,
     moreActionState: SnapshotStateMap<String, String>,
     onMoreActionClicked: () -> Unit
 ) {
@@ -131,10 +133,12 @@ fun VariableContent(
 @Composable
 fun ErrorContent(message: String) {
   Column(horizontalAlignment = Alignment.Start) {
-    Text(text = "Oops! Something went wrong.", fontWeight = FontWeight.Bold)
-    Text(text = message, color = MaterialTheme.colors.error)
+    Text(text = "Oops! Something went wrong. Please try again.", fontWeight = FontWeight.Bold)
+    Text(
+        text = if (message == "{}") "\nmessage: Screen Reset" else message,
+        color = MaterialTheme.colors.error)
     Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
-    Text(text = "Some things you can do:", textDecoration = TextDecoration.Underline)
+    Text(text = "Other things you can do:", textDecoration = TextDecoration.Underline)
     Text(
         text =
             "- Check your internet connection and try again.\n" +
@@ -202,6 +206,7 @@ fun MainDialogue(
     actionRepoState: ActionRepositoryState,
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
+    successResponseState: Boolean,
     onAddToPlaylist: (String, File, File) -> Unit,
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
@@ -213,6 +218,7 @@ fun MainDialogue(
         ResultDialogue(
             moreActionState = moreActionState,
             playlistState = playlistState,
+            successResponseState = successResponseState,
             onAddToPlaylist = onAddToPlaylist,
             onCreatePlaylist = onCreatePlaylist,
             onCloseDialogue = onCloseDialogue,
@@ -226,6 +232,7 @@ fun MainDialogue(
 fun ResultDialogue(
     moreActionState: SnapshotStateMap<String, String>,
     playlistState: PlaylistState,
+    successResponseState: Boolean,
     onAddToPlaylist: (String, File, File) -> Unit,
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
@@ -250,7 +257,9 @@ fun ResultDialogue(
       onCreatePlaylist = { createPlaylistDxState.value = it },
       onSelectPlaylist = { playlist: File, playlistName: String ->
         onAddToPlaylist(moreActionState["videoLink"].toString(), file, playlist)
-        Toast.makeText(context, "1 song added to $playlistName", Toast.LENGTH_SHORT).show()
+        if (!successResponseState) {
+          Toast.makeText(context, "1 song added to $playlistName", Toast.LENGTH_SHORT).show()
+        }
       })
   CreatePlaylistDialogue(
       onCreatePlaylist = onCreatePlaylist,

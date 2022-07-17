@@ -16,9 +16,9 @@ class MainViewModel : ViewModel() {
   private val _searchTextState: MutableState<String> = mutableStateOf(value = "")
   val searchTextState: State<String> = _searchTextState
 
-  private val _searchRepositoryState: MutableState<SearchRepositoryState> =
-      mutableStateOf(value = SearchRepositoryState.DISPLAYED)
-  val searchRepositoryState: State<SearchRepositoryState> = _searchRepositoryState
+  private val _httpResponseRepositoryState: MutableState<HttpResponseRepositoryState> =
+      mutableStateOf(value = HttpResponseRepositoryState.DISPLAYED)
+  val httpResponseRepositoryState: State<HttpResponseRepositoryState> = _httpResponseRepositoryState
 
   var moreActionState: SnapshotStateMap<String, String> = mutableStateMapOf()
 
@@ -37,6 +37,9 @@ class MainViewModel : ViewModel() {
       mutableStateOf(value = ScreenNavigationState.HOME)
   val screenNavigationState: State<ScreenNavigationState> = _screenNavigationState
 
+  private val _successResponseState: MutableState<Boolean> = mutableStateOf(value = true)
+  val successResponseState: State<Boolean> = _successResponseState
+
   fun updateSearchWidgetState(newValue: SearchWidgetState) {
     _searchWidgetState.value = newValue
   }
@@ -45,8 +48,8 @@ class MainViewModel : ViewModel() {
     _searchTextState.value = newValue
   }
 
-  fun updateSearchRepoState(newValue: SearchRepositoryState) {
-    _searchRepositoryState.value = newValue
+  fun updateSearchRepoState(newValue: HttpResponseRepositoryState) {
+    _httpResponseRepositoryState.value = newValue
   }
 
   fun updateActionRepoState(newValue: ActionRepositoryState) {
@@ -63,5 +66,9 @@ class MainViewModel : ViewModel() {
 
   fun updateScreenNavState(newValue: ScreenNavigationState) {
     _screenNavigationState.value = newValue
+  }
+
+  fun updateSuccessResponseState(newValue: Boolean) {
+    _successResponseState.value = newValue
   }
 }

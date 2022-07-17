@@ -3,7 +3,9 @@ package com.huenique.audibleyoutube.utils
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Environment
+import java.io.BufferedReader
 import java.io.File
+import java.io.FileReader
 import java.util.concurrent.TimeUnit
 
 const val MUSIC_LIBRARY_NAME = "music_library.m3u"
@@ -29,7 +31,20 @@ class MusicLibraryManager {
         metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong()
     val duration = musicLength?.let { TimeUnit.MILLISECONDS.toSeconds(it.toLong()) }
 
+    BufferedReader(FileReader(m3uFile)).use { br ->
+      var line: String?
+      while (br.readLine().also { line = it } != null) {
+        if (audioFile.absolutePath !== line) {
+          println("${audioFile.absolutePath} has been added")
+        } else {
+          println("${audioFile.absolutePath} already exists")
+        }
+      }
+    }
+
     m3uFile.appendText("\n#EXTINF:$duration,${audioFile.name}\n${audioFile.absolutePath}")
+
+    m3uFile.forEachLine { println(it) }
   }
 
   fun removeMusicFromPlaylist() {}

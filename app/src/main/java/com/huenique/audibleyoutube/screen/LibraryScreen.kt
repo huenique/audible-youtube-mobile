@@ -27,31 +27,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.model.MainViewModel
-import com.huenique.audibleyoutube.repository.SearchResultRepository
+import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
-import com.huenique.audibleyoutube.utils.NotificationManager
 
 @Composable
 fun LibraryScreen(
     searchWidgetState: SearchWidgetState,
     viewModel: MainViewModel,
-    searchResultRepository: SearchResultRepository,
+    httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
-    notificationManager: NotificationManager
+    httpResponseHandler: HttpResponseHandler
 ) {
   when (searchWidgetState) {
     SearchWidgetState.OPENED -> {
       MainVideoSearch(
           viewModel = viewModel,
-          searchResultRepository = searchResultRepository,
+          httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
-          notificationManager = notificationManager)
+          httpResponseHandler = httpResponseHandler)
     }
     SearchWidgetState.CLOSED -> {
       var librarySelectionState by remember { mutableStateOf(value = 0) }
