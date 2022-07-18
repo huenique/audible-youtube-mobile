@@ -15,14 +15,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.huenique.audibleyoutube.R
-import com.huenique.audibleyoutube.utils.MusicLibraryManager
 
 @Composable
-fun AudioPlayer(
-    mediaPlayer: MediaPlayer,
-    isPlayerMinimized: Boolean,
-    onPlayerClick: () -> Unit
-) {
+fun AudioPlayer(mediaPlayer: MediaPlayer, isPlayerMinimized: Boolean, onPlayerClick: () -> Unit) {
 
   // Get all songs in the library or playlist.
   // When the user plays a song in a different library or playlist, AudioPlayer should open the
