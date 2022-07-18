@@ -40,6 +40,15 @@ class MainViewModel : ViewModel() {
   private val _successResponseState: MutableState<Boolean> = mutableStateOf(value = true)
   val successResponseState: State<Boolean> = _successResponseState
 
+  private val _isPlayerMinimized: MutableState<Boolean> = mutableStateOf(value = true)
+  val isPlayerMinimized: State<Boolean> = _isPlayerMinimized
+
+  private val _currentSongPlaying: MutableState<String> = mutableStateOf(value = "")
+  val currentSongPlaying: State<String> = _currentSongPlaying
+
+  private val _currentPlaylist: MutableState<String> = mutableStateOf(value = "")
+  val currentPlaylist: State<String> = _currentPlaylist
+
   fun updateSearchWidgetState(newValue: SearchWidgetState) {
     _searchWidgetState.value = newValue
   }
@@ -70,5 +79,17 @@ class MainViewModel : ViewModel() {
 
   fun updateSuccessResponseState(newValue: Boolean) {
     _successResponseState.value = newValue
+  }
+
+  fun updateIsPlayerMinimized(newValue: Boolean) {
+    _isPlayerMinimized.value = newValue
+  }
+
+  fun updateCurrentSongPlaying(newValue: String) {
+    _currentSongPlaying.value = newValue
+  }
+
+  fun updateCurrentPlaylist(newValue: String) {
+    _currentPlaylist.value = newValue
   }
 }

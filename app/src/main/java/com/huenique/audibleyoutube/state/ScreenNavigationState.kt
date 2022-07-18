@@ -4,5 +4,5 @@ enum class ScreenNavigationState {
   HOME,
   SEARCH,
   LIBRARY,
-  ALL_SONGS
+  PLAYLIST
 }

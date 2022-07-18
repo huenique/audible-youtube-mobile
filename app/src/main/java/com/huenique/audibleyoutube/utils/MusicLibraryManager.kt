@@ -23,7 +23,15 @@ class MusicLibraryManager {
     return musicLibrary
   }
 
-  fun addMusicToLibrary(context: Context, m3uFile: File, audioFile: File) {
+  fun addMusicToLibrary(m3uFile: File, audioFile: File) {
+    BufferedReader(FileReader(m3uFile)).use { br ->
+      var line: String?
+
+      while (br.readLine().also { line = it } != null) {
+        if (audioFile.absolutePath == line) return
+      }
+    }
+
     val metaRetriever = MediaMetadataRetriever()
     metaRetriever.setDataSource(audioFile.absolutePath)
 
@@ -31,20 +39,8 @@ class MusicLibraryManager {
         metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong()
     val duration = musicLength?.let { TimeUnit.MILLISECONDS.toSeconds(it.toLong()) }
 
-    BufferedReader(FileReader(m3uFile)).use { br ->
-      var line: String?
-      while (br.readLine().also { line = it } != null) {
-        if (audioFile.absolutePath !== line) {
-          println("${audioFile.absolutePath} has been added")
-        } else {
-          println("${audioFile.absolutePath} already exists")
-        }
-      }
-    }
-
-    m3uFile.appendText("\n#EXTINF:$duration,${audioFile.name}\n${audioFile.absolutePath}")
-
-    m3uFile.forEachLine { println(it) }
+    m3uFile.appendText(
+        "\n#EXTINF:$duration,${audioFile.nameWithoutExtension}\n${audioFile.absolutePath}")
   }
 
   fun removeMusicFromPlaylist() {}
@@ -74,5 +70,44 @@ class MusicLibraryManager {
     }
 
     return songs
+  }
+
+  fun getSongsFromPlaylist(playlist: File): MutableMap<Int, Map<String, String>> {
+    val listedSongs = mutableMapOf<Int, Map<String, String>>()
+
+    // Collect songs listed in audio playlist file.
+    BufferedReader(FileReader(playlist)).use { br ->
+      var line: String?
+      var entryId = 0
+      var songDuration = ""
+      var songTitle = ""
+      var songPath = ""
+
+      while (br.readLine().also { line = it } != null) {
+        if (line!!.isEmpty()) continue
+
+        // Check if line is a valid m3u entry.
+        if (line!!.take(7) == "#EXTINF") {
+          // Extract data after #EXTINF: (e.g. 111,Song Title)
+          val songMetadata = line!!.split(":")[1].split(",")
+          songDuration = songMetadata[0]
+          songTitle = songMetadata[1]
+        } else if (line!!.startsWith("/")) {
+          songPath = line as String
+        }
+
+        if (songDuration.isNotEmpty() && songTitle.isNotEmpty() && songPath.isNotEmpty()) {
+          listedSongs[entryId] =
+              mapOf(
+                  "songDuration" to songDuration, "songTitle" to songTitle, "songPath" to songPath)
+          songDuration = ""
+          songTitle = ""
+          songPath = ""
+        }
+        entryId += 1
+      }
+    }
+
+    return listedSongs
   }
 }

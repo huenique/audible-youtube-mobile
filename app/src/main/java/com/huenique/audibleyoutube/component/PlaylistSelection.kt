@@ -2,6 +2,7 @@ package com.huenique.audibleyoutube.component
 
 import android.os.Environment
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
@@ -57,8 +58,12 @@ fun PlaylistMenu(
 ) {
   val context = LocalContext.current
   val musicDir = Environment.DIRECTORY_MUSIC
+  val isSysInDark = isSystemInDarkTheme()
 
-  Box(modifier = Modifier.fillMaxSize().background(color = Color.White)) {
+  Box(
+      modifier =
+          Modifier.fillMaxSize()
+              .background(color = if (isSysInDark) Color.Black else Color.White)) {
     Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
       Box(modifier = Modifier.height(40.dp)) {}
 
@@ -70,7 +75,9 @@ fun PlaylistMenu(
               text = AnnotatedString("Create New"),
               modifier =
                   Modifier.fillMaxWidth().padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-              style = TextStyle(fontSize = 20.sp),
+              style =
+                  TextStyle(
+                      color = if (isSysInDark) Color.White else Color.Black, fontSize = 20.sp),
               onClick = { onCreatePlaylist(true) })
           Divider(
               Modifier.padding(start = 14.dp),
@@ -94,14 +101,14 @@ fun PlaylistMenu(
         }
       }
 
-      playlists.forEach { Playlist(playlist = it, onSelectPlaylist = onSelectPlaylist) }
+      playlists.forEach { PlaylistOption(playlist = it, onSelectPlaylist = onSelectPlaylist) }
       onPlaylistCreation(false)
     }
   }
 }
 
 @Composable
-fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)? = null) {
+fun PlaylistOption(playlist: File, onSelectPlaylist: ((File, String) -> Unit)? = null) {
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(painter = painterResource(id = R.drawable.ic_playlist), contentDescription = null)
 
@@ -109,7 +116,9 @@ fun Playlist(playlist: File, onSelectPlaylist: ((File, String) -> Unit)? = null)
       ClickableText(
           text = AnnotatedString(playlist.nameWithoutExtension),
           modifier = Modifier.fillMaxWidth().padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
-          style = TextStyle(fontSize = 20.sp)) {
+          style =
+              TextStyle(
+                  if (isSystemInDarkTheme()) Color.White else Color.Black, fontSize = 20.sp)) {
         if (onSelectPlaylist != null) {
           onSelectPlaylist(playlist, playlist.nameWithoutExtension)
         }
@@ -201,7 +210,7 @@ fun CreatePlaylistDialogue(
 @Preview
 @Composable
 fun PlaylistPreview() {
-  AudibleYoutubeTheme { Playlist(File("", "")) }
+  AudibleYoutubeTheme { PlaylistOption(File("", "")) }
 }
 
 @Preview

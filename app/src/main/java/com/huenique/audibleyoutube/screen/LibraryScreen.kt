@@ -1,6 +1,7 @@
 package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,10 +29,13 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.huenique.audibleyoutube.R
+import com.huenique.audibleyoutube.component.Playlist
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
+import com.huenique.audibleyoutube.screen.main.MainPlaylistSelection
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
+import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
@@ -45,6 +50,7 @@ fun LibraryScreen(
     viewModel: MainViewModel,
     httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
+    mediaPlayer: MediaPlayer,
     musicLibraryManager: MusicLibraryManager,
     httpResponseHandler: HttpResponseHandler,
     onClickAllSongs: () -> Unit
@@ -59,18 +65,81 @@ fun LibraryScreen(
           httpResponseHandler = httpResponseHandler)
     }
     SearchWidgetState.CLOSED -> {
-      LibrarySelection(onClickAllSongs = onClickAllSongs)
+      LibrarySelection(
+          viewModel = viewModel,
+          mediaPlayer = mediaPlayer,
+          musicLibraryManager = musicLibraryManager,
+          onClickAllSongs = onClickAllSongs)
     }
   }
 }
 
 @Composable
-fun LibrarySelection(onClickAllSongs: () -> Unit) {
-  Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
-    Box(modifier = Modifier.height(40.dp)) {}
-    LibraryOption(
-        title = "All songs", resourceId = R.drawable.ic_library_music, onClick = onClickAllSongs)
-    LibraryOption(title = "Playlists", resourceId = R.drawable.ic_playlist, onClick = {})
+fun LibrarySelection(
+    viewModel: MainViewModel,
+    mediaPlayer: MediaPlayer,
+    musicLibraryManager: MusicLibraryManager,
+    onClickAllSongs: () -> Unit
+) {
+  val playlistState by viewModel.playlistState
+  val currentPlaylist by viewModel.currentPlaylist
+  var libraryViewState by remember { mutableStateOf("libraryOptions") }
+  var listedSongs by remember { mutableMapOf<String, MutableMap<Int, Map<String, String>>>() }
+
+  when (libraryViewState) {
+    "playlistSelection" -> {
+      BackHandler(enabled = true) {
+        libraryViewState = "libraryOptions"
+
+        // PlaylistSelection or MainPlaylistSelection only changes when we use PlaylistState
+        viewModel.updatePlaylistState(newValue = PlaylistState.CLOSED)
+      }
+    }
+    "playlist" -> {
+      BackHandler(enabled = true) { libraryViewState = "playlistSelection" }
+    }
+  }
+
+  when (libraryViewState) {
+    "libraryOptions" -> {
+      Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
+        Box(modifier = Modifier.height(40.dp)) {}
+        LibraryOption(
+            title = "All songs",
+            resourceId = R.drawable.ic_library_music,
+            onClick = onClickAllSongs)
+        LibraryOption(
+            title = "Playlists",
+            resourceId = R.drawable.ic_playlist,
+            onClick = {
+              libraryViewState = "playlistSelection"
+              viewModel.updatePlaylistState(newValue = PlaylistState.OPENED)
+            })
+      }
+    }
+    "playlistSelection" -> {
+      MainPlaylistSelection(
+          playlistState,
+          onCreatePlaylist = {
+              externalFilesDir: File,
+              playlistName: String,
+              resultDialogue: MutableState<String> ->
+            val isPlaylistCreated = musicLibraryManager.addPlaylist(externalFilesDir, playlistName)
+            if (isPlaylistCreated) {
+              resultDialogue.value = "$playlistName successfully created"
+            } else {
+              resultDialogue.value = "$playlistName already exists"
+            }
+          },
+          onSelectPlaylist = { playlist: File, playlistName: String ->
+            listedSongs = musicLibraryManager.getSongsFromPlaylist(playlist)
+            viewModel.updateCurrentPlaylist(playlistName)
+            libraryViewState = "playlist"
+          })
+    }
+    "playlist" -> {
+      Playlist(viewModel = viewModel, songs = listedSongs, mediaPlayer = mediaPlayer)
+    }
   }
 }
 
@@ -84,7 +153,7 @@ fun AllSongs(
 
   // Adding a song to this list will prevent creating multiple playing indicators or pause icons.
   // TODO: Move this to main view model
-  var currentlyPlaying by remember { mutableStateOf(value = "") }
+  var currentlyPlaying by rememberSaveable { mutableStateOf(value = "") }
 
   Column(
       modifier =
@@ -101,6 +170,7 @@ fun AllSongs(
             }
             currentlyPlaying = song.key
 
+            // TODO: We should instead invoke AudioPlayer
             viewModel.viewModelScope.launch {
               withContext(Dispatchers.IO) {
                 mediaPlayer.reset()

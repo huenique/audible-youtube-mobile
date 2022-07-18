@@ -5,14 +5,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.repository.Repository
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import okhttp3.*
 import okio.BufferedSink
 import okio.buffer
 import okio.sink
+import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 class AudibleYoutubeApi {
   private val queryCount = 1
@@ -48,7 +49,11 @@ class AudibleYoutubeApi {
                       val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
                       val reason =
                           if (jsonContent !== null)
-                              jsonContent.getJSONArray("errors").get(0) as String
+                              try {
+                                jsonContent.getJSONArray("errors").get(0) as String
+                              } catch (e: JSONException) {
+                                jsonContent.getString("error")
+                              }
                           else ""
                       responseRepo.update(
                           value =
@@ -69,10 +74,11 @@ class AudibleYoutubeApi {
 
                     if (context != null && builder != null) {
                       NotificationManagerCompat.from(context).apply {
-                        builder.setContentTitle(file.nameWithoutExtension)
-                        builder.setContentText("Download in progress")
-                        builder.setProgress(
-                            respBody.contentLength().toInt(), totalRead.toInt(), false)
+                        builder
+                            .setContentTitle(file.nameWithoutExtension)
+                            .setOnlyAlertOnce(true)
+                            .setContentText("Download in progress")
+                            .setProgress(respBody.contentLength().toInt(), totalRead.toInt(), false)
                         notify(notificationId, builder.build())
 
                         while (sourceBytes.read(sink.buffer, 8L * 1024).also { lastRead = it } !=

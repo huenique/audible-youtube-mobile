@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.huenique.audibleyoutube.component.AudioPlayer
 import com.huenique.audibleyoutube.component.NavBar
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
@@ -28,7 +29,7 @@ object NavigationRoute {
   const val HOME = "home"
   const val SEARCH = "search"
   const val LIBRARY = "library"
-  const val ALL_SONGS = "allSongs"
+  const val PLAYLIST = "playlist"
 }
 
 @Composable
@@ -51,6 +52,7 @@ fun MainScreen(
   val httpResponseRepo = RepositoryGetter().httpResponseRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val screenNavigationState by mainViewModel.screenNavigationState
+  val isPlayerMinimized by mainViewModel.isPlayerMinimized
 
   LaunchedEffect(Unit) {
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
@@ -58,14 +60,23 @@ fun MainScreen(
 
   showBottomBar =
       when (navBackStackEntry?.destination?.route) {
-        NavigationRoute.ALL_SONGS -> false
+        NavigationRoute.PLAYLIST -> false
         else -> true
       }
 
+  // TODO: Create view/screen for playlists
+  // When a song is selected/tapped in a specified playlist:
+  // 1. Save/remember the song title
+  // 2. Read playlist file
+  // 3. Pass the file object to getSongsFromPlaylist()
+  // 4. Pass the return data to AudioPlayer
+  // 5. Play the song from AudioPlayer
+  // 6. Remember the current song playing
+  // 7. On skip, simply play the next song in the data returned by getSongsFromPlaylist()
   Scaffold(
       topBar = {
         when (navBackStackEntry?.destination?.route) {
-          NavigationRoute.ALL_SONGS -> TopAppBar(title = { Text(text = "All songs") })
+          NavigationRoute.PLAYLIST -> TopAppBar(title = { Text(text = "All songs") })
           else ->
               MainTopAppBar(
                   viewModel = mainViewModel,
@@ -90,11 +101,17 @@ fun MainScreen(
         )
       },
       bottomBar = {
-        if (showBottomBar)
-            NavBar(
-                onHomeClick = { navController.navigate(NavigationRoute.HOME) },
-                onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
-                onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
+        if (showBottomBar) {
+          NavBar(
+              onHomeClick = { navController.navigate(NavigationRoute.HOME) },
+              onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
+              onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
+        } else {
+          AudioPlayer(
+              mediaPlayer = mediaPlayer,
+              isPlayerMinimized = isPlayerMinimized,
+              onPlayerClick = { mainViewModel.updateIsPlayerMinimized(newValue = false) })
+        }
       })
 }
 
@@ -137,12 +154,13 @@ fun MainNavHost(
           httpResponseRepository = httpResponseRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
+          mediaPlayer = mediaPlayer,
           musicLibraryManager = musicLibraryManager,
           httpResponseHandler = httpResponseHandler,
-          onClickAllSongs = { navController.navigate(NavigationRoute.ALL_SONGS) })
+          onClickAllSongs = { navController.navigate(NavigationRoute.PLAYLIST) })
     }
-    composable(NavigationRoute.ALL_SONGS) {
-      onNavigate(ScreenNavigationState.ALL_SONGS)
+    composable(NavigationRoute.PLAYLIST) {
+      onNavigate(ScreenNavigationState.PLAYLIST)
       val songs = musicLibraryManager.getAllSongs(LocalContext.current)
       AllSongs(viewModel = mainViewModel, songs = songs, mediaPlayer = mediaPlayer)
     }

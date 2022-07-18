@@ -74,7 +74,7 @@ fun MainVideoSearch(
             onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
             context = context,
             builder = builder,
-            onSinkClose = { musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource) })
+            onSinkClose = { musicLibraryManager.addMusicToLibrary(playlist, mediaSource) })
       },
       onCreatePlaylist = {
           externalFilesDir: File,
@@ -104,8 +104,6 @@ fun MainVideoSearch(
             onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
             context = context,
             builder = builder,
-            onSinkClose = {
-              musicLibraryManager.addMusicToLibrary(context, musicLibrary, mediaSource)
-            })
+            onSinkClose = { musicLibraryManager.addMusicToLibrary(musicLibrary, mediaSource) })
       })
 }
