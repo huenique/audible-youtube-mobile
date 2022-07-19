@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.screen.main
 
+import android.os.Environment
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -75,6 +76,21 @@ fun MainVideoSearch(
             context = context,
             builder = builder,
             onSinkClose = { musicLibraryManager.addMusicToLibrary(playlist, mediaSource) })
+
+        val thumbnailUrl = moreActionState["thumbnail"]
+        val thumbnailFile = moreActionState["videoTitle"]
+
+        if (thumbnailUrl != null && thumbnailFile != null) {
+          audibleYoutube.downloadThumbnail(
+              thumbnailUrl = thumbnailUrl,
+              file =
+                  File(
+                      context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                      "$thumbnailFile.jpg"),
+              responseRepo = httpResponseRepository,
+              callbackFn = {},
+          )
+        }
       },
       onCreatePlaylist = {
           externalFilesDir: File,
@@ -105,5 +121,22 @@ fun MainVideoSearch(
             context = context,
             builder = builder,
             onSinkClose = { musicLibraryManager.addMusicToLibrary(musicLibrary, mediaSource) })
+
+        val thumbnailUrl = moreActionState["thumbnail"]
+        val thumbnailFile = moreActionState["videoTitle"]
+
+        println("thumbnailUrl: $thumbnailUrl\nthumbnailFile: $thumbnailFile")
+
+        if (thumbnailUrl != null && thumbnailFile != null) {
+          audibleYoutube.downloadThumbnail(
+              thumbnailUrl = thumbnailUrl,
+              file =
+                  File(
+                      context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                      "$thumbnailFile.jpg"),
+              responseRepo = httpResponseRepository,
+              callbackFn = {},
+          )
+        }
       })
 }

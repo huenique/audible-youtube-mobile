@@ -189,6 +189,7 @@ fun ResultContent(
             onClick = {
               moreActionState["videoLink"] = videoLink
               moreActionState["videoTitle"] = videoTitle
+              moreActionState["thumbnail"] = thumbnail
               onMoreActionClicked()
             }) {
           Icon(

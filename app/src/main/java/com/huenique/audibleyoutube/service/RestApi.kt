@@ -12,11 +12,66 @@ import okio.sink
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class AudibleYoutubeApi {
   private val queryCount = 1
+
+  fun downloadThumbnail(
+      thumbnailUrl: String,
+      file: File,
+      responseRepo: Repository<String>,
+      callbackFn: () -> Any,
+  ) {
+    val client = OkHttpClient.Builder().build()
+    val request = Request.Builder().url(thumbnailUrl).build()
+
+    client
+        .newCall(request)
+        .enqueue(
+            object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                e.message?.let {
+                  responseRepo.update(value = "message: $it")
+                  callbackFn()
+                }
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                response.use {
+                  if (!response.isSuccessful) {
+                    val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
+                    val reason =
+                        jsonContent?.let { it.getJSONArray("errors").get(0) as String } ?: ""
+                    responseRepo.update(
+                        value =
+                            "\ncode: ${response.code}" +
+                                "\nmessage: ${response.message}" +
+                                "\nreason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                  } else {
+                    val inputStream = response.body!!.byteStream()
+                    val buffer = ByteArray(1024 * 4)
+                    val off = 0
+                    var len = 0
+
+                    try {
+                      val fos = FileOutputStream(file)
+                      while (inputStream.read(buffer).apply { len = this } > 0) {
+                        fos.write(buffer, off, len)
+                      }
+                      fos.flush()
+                      fos.close()
+                    } catch (e: IOException) {
+                      responseRepo.update(value = "message: $e")
+                    }
+                  }
+                  callbackFn()
+                }
+              }
+            })
+  }
 
   fun downloadVideo(
       query: String,
