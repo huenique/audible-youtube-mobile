@@ -15,19 +15,15 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
-import androidx.lifecycle.viewModelScope
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.component.Playlist
 import com.huenique.audibleyoutube.model.MainViewModel
@@ -35,19 +31,18 @@ import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainPlaylistSelection
 import com.huenique.audibleyoutube.screen.main.MainVideoSearch
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
+import com.huenique.audibleyoutube.state.PlayButtonState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 
 @Composable
 fun LibraryScreen(
     searchWidgetState: SearchWidgetState,
     viewModel: MainViewModel,
+    playButtonState: PlayButtonState,
     httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
     mediaPlayer: MediaPlayer,
@@ -67,6 +62,7 @@ fun LibraryScreen(
     SearchWidgetState.CLOSED -> {
       LibrarySelection(
           viewModel = viewModel,
+          playButtonState = playButtonState,
           mediaPlayer = mediaPlayer,
           musicLibraryManager = musicLibraryManager,
           onClickAllSongs = onClickAllSongs)
@@ -77,6 +73,7 @@ fun LibraryScreen(
 @Composable
 fun LibrarySelection(
     viewModel: MainViewModel,
+    playButtonState: PlayButtonState,
     mediaPlayer: MediaPlayer,
     musicLibraryManager: MusicLibraryManager,
     onClickAllSongs: () -> Unit
@@ -138,23 +135,22 @@ fun LibrarySelection(
           })
     }
     "playlist" -> {
-      Playlist(viewModel = viewModel, songs = listedSongs, mediaPlayer = mediaPlayer)
+      Playlist(
+          viewModel = viewModel,
+          playButtonState = playButtonState,
+          songs = listedSongs,
+          mediaPlayer = mediaPlayer)
     }
   }
 }
 
 @Composable
 fun AllSongs(
-    viewModel: MainViewModel,
+    playButtonState: PlayButtonState,
+    currentSongPlaying: String,
     songs: MutableMap<String, String>,
-    mediaPlayer: MediaPlayer
+    onSongClick: (String, String) -> Unit
 ) {
-  val context = LocalContext.current
-
-  // Adding a song to this list will prevent creating multiple playing indicators or pause icons.
-  // TODO: Move this to main view model
-  var currentlyPlaying by rememberSaveable { mutableStateOf(value = "") }
-
   Column(
       modifier =
           Modifier.padding(start = 14.dp, end = 14.dp).verticalScroll(rememberScrollState())) {
@@ -163,23 +159,9 @@ fun AllSongs(
     songs.forEach { song ->
       Song(
           title = song.key,
-          currentlyPlaying = currentlyPlaying,
-          onClick = {
-            if (currentlyPlaying.isNotEmpty()) {
-              currentlyPlaying = ""
-            }
-            currentlyPlaying = song.key
-
-            // TODO: We should instead invoke AudioPlayer
-            viewModel.viewModelScope.launch {
-              withContext(Dispatchers.IO) {
-                mediaPlayer.reset()
-                mediaPlayer.setDataSource(context, File(song.value).toUri())
-                mediaPlayer.prepare()
-                mediaPlayer.start()
-              }
-            }
-          },
+          currentSongPlaying = currentSongPlaying,
+          playButtonState = playButtonState,
+          onClick = { onSongClick(song.key, song.value) },
           onMoreActionClicked = {})
     }
   }
@@ -210,7 +192,8 @@ fun LibraryOption(title: String, resourceId: Int, onClick: () -> Unit) {
 @Composable
 fun Song(
     title: String,
-    currentlyPlaying: String,
+    currentSongPlaying: String,
+    playButtonState: PlayButtonState,
     onClick: () -> Unit,
     onMoreActionClicked: () -> Unit
 ) {
@@ -226,12 +209,22 @@ fun Song(
         overflow = TextOverflow.Ellipsis,
         maxLines = 1)
 
-    when (currentlyPlaying) {
+    when (currentSongPlaying) {
       title -> {
-        Icon(
-            painter = painterResource(R.drawable.ic_pause),
-            modifier = Modifier.size(24.dp),
-            contentDescription = "Playing indication")
+        when (playButtonState) {
+          PlayButtonState.PLAYING -> {
+            Icon(
+                painter = painterResource(R.drawable.ic_pause),
+                modifier = Modifier.size(24.dp),
+                contentDescription = "Playing indication")
+          }
+          PlayButtonState.PAUSED -> {
+            Icon(
+                painter = painterResource(R.drawable.ic_play),
+                modifier = Modifier.size(24.dp),
+                contentDescription = "Paused indication")
+          }
+        }
       }
     }
 

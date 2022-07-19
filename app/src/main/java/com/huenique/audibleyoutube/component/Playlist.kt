@@ -19,6 +19,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.screen.Song
+import com.huenique.audibleyoutube.state.PlayButtonState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +28,7 @@ import java.io.File
 @Composable
 fun Playlist(
     viewModel: MainViewModel,
+    playButtonState: PlayButtonState,
     songs: MutableMap<Int, Map<String, String>>,
     mediaPlayer: MediaPlayer
 ) {
@@ -48,7 +50,8 @@ fun Playlist(
 
       Song(
           title = songTitle,
-          currentlyPlaying = currentlyPlaying,
+          currentSongPlaying = currentlyPlaying,
+          playButtonState = playButtonState,
           onClick = {
             if (currentlyPlaying.isNotEmpty()) {
               currentlyPlaying = ""

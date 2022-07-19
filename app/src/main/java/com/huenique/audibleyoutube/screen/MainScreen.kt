@@ -2,17 +2,19 @@ package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.core.net.toUri
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.component.MaximizedPlayer
 import com.huenique.audibleyoutube.component.MinimizedPlayer
 import com.huenique.audibleyoutube.component.NavBar
@@ -27,6 +29,11 @@ import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
 import com.huenique.audibleyoutube.utils.NotificationManager
 import com.huenique.audibleyoutube.utils.RepositoryGetter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -59,9 +66,25 @@ fun MainScreen(
   val screenNavigationState by mainViewModel.screenNavigationState
   val playButtonState by mainViewModel.playButtonState
   val currentSongPlaying by mainViewModel.currentSongPlaying
+  val currentPlaylistContent by mainViewModel.currentPlaylistContent
 
   LaunchedEffect(Unit) {
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
+  }
+
+  mediaPlayer.setOnCompletionListener {
+    val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
+    nextSongPath?.let { songTitle: String ->
+      mainViewModel.updateCurrentSongPlaying(newValue = File(songTitle).nameWithoutExtension)
+      mainViewModel.viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+          it.reset()
+          it.setDataSource(context, File(nextSongPath).toUri())
+          it.prepare()
+          it.start()
+        }
+      }
+    }
   }
 
   showBottomBar =
@@ -76,19 +99,20 @@ fun MainScreen(
         else -> true
       }
 
-  // TODO: Create view/screen for playlists
-  // When a song is selected/tapped in a specified playlist:
-  // 1. Save/remember the song title
-  // 2. Read playlist file
-  // 3. Pass the file object to getSongsFromPlaylist()
-  // 4. Pass the return data to AudioPlayer
-  // 5. Play the song from AudioPlayer
-  // 6. Remember the current song playing
-  // 7. On skip, simply play the next song in the data returned by getSongsFromPlaylist()
   Scaffold(
       topBar = {
         when (navBackStackEntry?.destination?.route) {
-          NavigationRoute.PLAYLIST -> TopAppBar(title = { Text(text = "All songs") })
+          NavigationRoute.PLAYLIST -> {
+            TopAppBar(
+                title = { Text(text = "All songs") },
+                navigationIcon = {
+                  IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_arrow_back),
+                        contentDescription = "All songs return button")
+                  }
+                })
+          }
           NavigationRoute.PLAYER -> {}
           else ->
               MainTopAppBar(
@@ -113,7 +137,7 @@ fun MainScreen(
             musicLibraryManager = musicLibraryManager,
             httpResponseHandler = httpResponseHandler,
             mediaPlayer = mediaPlayer,
-        )
+            currentPlaylistContent = currentPlaylistContent)
       },
       bottomBar = {
         Column {
@@ -123,12 +147,13 @@ fun MainScreen(
                 currentSongPlaying = currentSongPlaying,
                 onPlayerClick = { navController.navigate(NavigationRoute.PLAYER) },
                 onPlayClick = {
-                  mediaPlayer.start()
                   when (playButtonState) {
                     PlayButtonState.PAUSED -> {
+                      mediaPlayer.start()
                       mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
                     }
                     PlayButtonState.PLAYING -> {
+                      mediaPlayer.pause()
                       mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
                     }
                   }
@@ -157,8 +182,11 @@ fun MainNavHost(
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
     httpResponseHandler: HttpResponseHandler,
-    mediaPlayer: MediaPlayer
+    mediaPlayer: MediaPlayer,
+    currentPlaylistContent: TreeMap<String, String>
 ) {
+  val context = LocalContext.current
+
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
       onNavigate(ScreenNavigationState.HOME)
@@ -183,6 +211,7 @@ fun MainNavHost(
       onNavigate(ScreenNavigationState.LIBRARY)
       LibraryScreen(
           viewModel = mainViewModel,
+          playButtonState = playButtonState,
           httpResponseRepository = httpResponseRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
@@ -194,7 +223,36 @@ fun MainNavHost(
     composable(NavigationRoute.PLAYLIST) {
       onNavigate(ScreenNavigationState.PLAYLIST)
       val songs = musicLibraryManager.getAllSongs(LocalContext.current)
-      AllSongs(viewModel = mainViewModel, songs = songs, mediaPlayer = mediaPlayer)
+      mainViewModel.updateCurrentPlaylistContent(newValue = songs)
+      AllSongs(
+          playButtonState = playButtonState,
+          currentSongPlaying = currentSongPlaying,
+          songs = songs,
+          onSongClick = { songTitle: String, songPath: String ->
+            if (songTitle != currentSongPlaying && playButtonState == PlayButtonState.PAUSED) {
+              mediaPlayer.start()
+              mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
+            } else if (songTitle == currentSongPlaying &&
+                playButtonState == PlayButtonState.PLAYING) {
+              mediaPlayer.pause()
+              mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
+            }
+
+            if (currentSongPlaying != songTitle) {
+              if (currentSongPlaying.isNotEmpty()) {
+                mainViewModel.updateCurrentSongPlaying(newValue = "")
+              }
+              mainViewModel.updateCurrentSongPlaying(newValue = songTitle)
+              mainViewModel.viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                  mediaPlayer.reset()
+                  mediaPlayer.setDataSource(context, File(songPath).toUri())
+                  mediaPlayer.prepare()
+                  mediaPlayer.start()
+                }
+              }
+            }
+          })
     }
     composable(NavigationRoute.PLAYER) {
       onNavigate(ScreenNavigationState.PLAYER)
@@ -204,15 +262,43 @@ fun MainNavHost(
           onPlayClick = {
             when (playButtonState) {
               PlayButtonState.PAUSED -> {
+                mediaPlayer.start()
                 mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
               }
               PlayButtonState.PLAYING -> {
+                mediaPlayer.pause()
                 mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
               }
             }
           },
-          onForwardClick = { /*TODO*/},
-          onBackClick = { /*TODO*/},
+          onForwardClick = {
+            val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
+            nextSongPath?.let {
+              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
+            }
+            mainViewModel.viewModelScope.launch {
+              withContext(Dispatchers.IO) {
+                mediaPlayer.reset()
+                mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+              }
+            }
+          },
+          onBackClick = {
+            val nextSongPath = currentPlaylistContent.lowerEntry(currentSongPlaying)?.value
+            nextSongPath?.let {
+              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
+            }
+            mainViewModel.viewModelScope.launch {
+              withContext(Dispatchers.IO) {
+                mediaPlayer.reset()
+                mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+              }
+            }
+          },
           onArrowDownClick = { navController.popBackStack() })
     }
   }

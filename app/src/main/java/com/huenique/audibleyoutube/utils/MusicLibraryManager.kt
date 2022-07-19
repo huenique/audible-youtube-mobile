@@ -6,6 +6,7 @@ import android.os.Environment
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 const val MUSIC_LIBRARY_NAME = "music_library.m3u"
@@ -58,8 +59,8 @@ class MusicLibraryManager {
 
   fun removePlayList() {}
 
-  fun getAllSongs(context: Context): MutableMap<String, String> {
-    val songs = mutableMapOf<String, String>()
+  fun getAllSongs(context: Context): TreeMap<String, String> {
+    val songs = TreeMap<String, String>()
 
     context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath?.let { it ->
       File(it).walk().forEach {

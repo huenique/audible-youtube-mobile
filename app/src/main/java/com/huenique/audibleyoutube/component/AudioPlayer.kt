@@ -62,9 +62,7 @@ fun MaximizedPlayer(
           modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
 
       MarqueeText(
-          text = "Veeeeerrrryyy Loooonnngg - Title of the song",
-          fontSize = 24.sp,
-          modifier = Modifier.align(Alignment.Start))
+          text = currentSongPlaying, fontSize = 24.sp, modifier = Modifier.align(Alignment.Start))
     }
 
     Spacer(modifier = Modifier.weight(1f))
@@ -129,7 +127,10 @@ fun MinimizedPlayer(
           modifier = Modifier.height(56.dp).width(56.dp),
           alignment = Alignment.CenterStart,
           colorFilter = ColorFilter.tint(color = MaterialTheme.colors.onPrimary))
-      Text(currentSongPlaying)
+      MarqueeText(
+          text = currentSongPlaying,
+          modifier = Modifier.width(198.dp),
+          gradientEdgeColor = Color.Transparent)
     }
 
     Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
@@ -176,7 +177,7 @@ fun MaximizedPlayerPreview() {
 fun MinimizedPlayerPreview() {
   MinimizedPlayer(
       PlayButtonState.PLAYING,
-      currentSongPlaying = "",
+      currentSongPlaying = "Veeeeerrrryyy Loooonnngg - Title of the song",
       onForwardClick = {},
       onPlayClick = {},
       onPlayerClick = {})

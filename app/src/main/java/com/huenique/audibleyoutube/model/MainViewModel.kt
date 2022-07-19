@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import com.huenique.audibleyoutube.state.*
+import java.util.*
 
 class MainViewModel : ViewModel() {
   private val _searchWidgetState: MutableState<SearchWidgetState> =
@@ -50,6 +51,10 @@ class MainViewModel : ViewModel() {
       mutableStateOf(value = PlayButtonState.PAUSED)
   val playButtonState: State<PlayButtonState> = _playButtonState
 
+  private val _currentPlaylistContent: MutableState<TreeMap<String, String>> =
+      mutableStateOf(value = TreeMap())
+  val currentPlaylistContent = _currentPlaylistContent
+
   fun updateSearchWidgetState(newValue: SearchWidgetState) {
     _searchWidgetState.value = newValue
   }
@@ -92,5 +97,9 @@ class MainViewModel : ViewModel() {
 
   fun updatePlayButtonState(newValue: PlayButtonState) {
     _playButtonState.value = newValue
+  }
+
+  fun updateCurrentPlaylistContent(newValue: TreeMap<String, String>) {
+    _currentPlaylistContent.value = newValue
   }
 }
