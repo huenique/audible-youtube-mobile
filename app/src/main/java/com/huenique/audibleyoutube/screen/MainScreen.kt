@@ -1,6 +1,7 @@
 package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -12,12 +13,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.huenique.audibleyoutube.component.AudioPlayer
+import com.huenique.audibleyoutube.component.MaximizedPlayer
+import com.huenique.audibleyoutube.component.MinimizedPlayer
 import com.huenique.audibleyoutube.component.NavBar
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
+import com.huenique.audibleyoutube.state.PlayButtonState
 import com.huenique.audibleyoutube.state.ScreenNavigationState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
@@ -30,6 +33,7 @@ object NavigationRoute {
   const val SEARCH = "search"
   const val LIBRARY = "library"
   const val PLAYLIST = "playlist"
+  const val PLAYER = "player"
 }
 
 @Composable
@@ -47,12 +51,14 @@ fun MainScreen(
   val navController = rememberNavController()
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   var showBottomBar by rememberSaveable { mutableStateOf(value = true) }
+  var showMiniPlayer by rememberSaveable { mutableStateOf(value = false) }
 
   // View model states and dependencies
   val httpResponseRepo = RepositoryGetter().httpResponseRepository()
   val searchWidgetState by mainViewModel.searchWidgetState
   val screenNavigationState by mainViewModel.screenNavigationState
-  val isPlayerMinimized by mainViewModel.isPlayerMinimized
+  val playButtonState by mainViewModel.playButtonState
+  val currentSongPlaying by mainViewModel.currentSongPlaying
 
   LaunchedEffect(Unit) {
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
@@ -61,6 +67,12 @@ fun MainScreen(
   showBottomBar =
       when (navBackStackEntry?.destination?.route) {
         NavigationRoute.PLAYLIST -> false
+        else -> true
+      }
+
+  showMiniPlayer =
+      when (navBackStackEntry?.destination?.route) {
+        NavigationRoute.PLAYER -> false
         else -> true
       }
 
@@ -77,6 +89,7 @@ fun MainScreen(
       topBar = {
         when (navBackStackEntry?.destination?.route) {
           NavigationRoute.PLAYLIST -> TopAppBar(title = { Text(text = "All songs") })
+          NavigationRoute.PLAYER -> {}
           else ->
               MainTopAppBar(
                   viewModel = mainViewModel,
@@ -93,6 +106,8 @@ fun MainScreen(
             mainViewModel = mainViewModel,
             httpResponseRepository = httpResponseRepo,
             searchWidgetState = searchWidgetState,
+            playButtonState = playButtonState,
+            currentSongPlaying = currentSongPlaying,
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
             audibleYoutube = audibleYoutube,
             musicLibraryManager = musicLibraryManager,
@@ -101,16 +116,31 @@ fun MainScreen(
         )
       },
       bottomBar = {
-        if (showBottomBar) {
-          NavBar(
-              onHomeClick = { navController.navigate(NavigationRoute.HOME) },
-              onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
-              onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
-        } else {
-          AudioPlayer(
-              mediaPlayer = mediaPlayer,
-              isPlayerMinimized = isPlayerMinimized,
-              onPlayerClick = { mainViewModel.updateIsPlayerMinimized(newValue = false) })
+        Column {
+          if (showMiniPlayer) {
+            MinimizedPlayer(
+                playButtonState = playButtonState,
+                currentSongPlaying = currentSongPlaying,
+                onPlayerClick = { navController.navigate(NavigationRoute.PLAYER) },
+                onPlayClick = {
+                  mediaPlayer.start()
+                  when (playButtonState) {
+                    PlayButtonState.PAUSED -> {
+                      mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
+                    }
+                    PlayButtonState.PLAYING -> {
+                      mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
+                    }
+                  }
+                },
+                onForwardClick = {})
+          }
+          if (showBottomBar && showMiniPlayer) {
+            NavBar(
+                onHomeClick = { navController.navigate(NavigationRoute.HOME) },
+                onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
+                onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
+          }
         }
       })
 }
@@ -121,6 +151,8 @@ fun MainNavHost(
     mainViewModel: MainViewModel,
     httpResponseRepository: HttpResponseRepository,
     searchWidgetState: SearchWidgetState,
+    playButtonState: PlayButtonState,
+    currentSongPlaying: String,
     onNavigate: (ScreenNavigationState) -> Unit,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
@@ -163,6 +195,25 @@ fun MainNavHost(
       onNavigate(ScreenNavigationState.PLAYLIST)
       val songs = musicLibraryManager.getAllSongs(LocalContext.current)
       AllSongs(viewModel = mainViewModel, songs = songs, mediaPlayer = mediaPlayer)
+    }
+    composable(NavigationRoute.PLAYER) {
+      onNavigate(ScreenNavigationState.PLAYER)
+      MaximizedPlayer(
+          playButtonState = playButtonState,
+          currentSongPlaying = currentSongPlaying,
+          onPlayClick = {
+            when (playButtonState) {
+              PlayButtonState.PAUSED -> {
+                mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
+              }
+              PlayButtonState.PLAYING -> {
+                mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
+              }
+            }
+          },
+          onForwardClick = { /*TODO*/},
+          onBackClick = { /*TODO*/},
+          onArrowDownClick = { navController.popBackStack() })
     }
   }
 }
