@@ -31,6 +31,37 @@ class RecentManager {
     }
   }
 
+  private fun removeCover(outFile: File, songCoverPath: String) {
+    val songs = outFile.readLines().toMutableList()
+
+    if (songCoverPath.isEmpty()) return
+
+    songs.removeAll(listOf(songCoverPath))
+
+    val writer = PrintWriter(outFile)
+    writer.write("")
+    writer.close()
+
+    for (song in songs) {
+      outFile.appendText(song)
+      outFile.appendText("\n")
+    }
+  }
+
+  fun removeFromRecentlyAdded(context: Context, songCoverPath: String) {
+    val recentAdd =
+        File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), RECENTLY_ADDED)
+
+    removeCover(recentAdd, songCoverPath)
+  }
+
+  fun removeFromRecentlyPlayed(context: Context, songCoverPath: String) {
+    val recentPlay =
+        File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), RECENTLY_PLAYED)
+
+    removeCover(recentPlay, songCoverPath)
+  }
+
   fun createRecentDb(context: Context) {
     val recentlyPlayedDb =
         File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), RECENTLY_PLAYED)

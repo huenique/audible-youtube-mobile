@@ -5,16 +5,16 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.repository.Repository
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 import okhttp3.*
 import okio.BufferedSink
 import okio.buffer
 import okio.sink
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class AudibleYoutubeApi {
   private val queryCount = 1

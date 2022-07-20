@@ -25,11 +25,11 @@ import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.*
 import com.huenique.audibleyoutube.utils.*
-import java.io.File
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -262,8 +262,10 @@ fun MainNavHost(
     composable(NavigationRoute.PLAYLIST) {
       onNavigate(ScreenNavigationState.PLAYLIST)
       val songs = musicLibraryManager.getAllSongs(LocalContext.current)
+
       mainViewModel.updateCurrentPlaylist(newValue = "music_library.m3u")
       mainViewModel.updateCurrentPlaylistContent(newValue = songs)
+
       AllSongs(
           playButtonState = playButtonState,
           currentSongPlaying = currentSongPlaying,
@@ -301,7 +303,18 @@ fun MainNavHost(
             mainViewModel.updateCurrentSongCover(newValue = songCover)
             recentManager.addToRecentlyPlayed(context, songCover)
           },
-          onMoreActionClicked = {})
+          onDeleteSong = { songTitle: String ->
+            musicLibraryManager.removeSongFromLibrary(context, songTitle)
+
+            if (currentSongPlaying == songTitle) {
+              mediaPlayer.reset()
+              mainViewModel.updateCurrentSongPlaying(newValue = "")
+              mainViewModel.updateCurrentSongCover(newValue = "")
+              mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
+            }
+
+            navController.navigate(NavigationRoute.PLAYLIST)
+          })
     }
     composable(NavigationRoute.PLAYER) {
       onNavigate(ScreenNavigationState.PLAYER)

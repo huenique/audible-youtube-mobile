@@ -2,22 +2,17 @@ package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -25,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.huenique.audibleyoutube.R
+import com.huenique.audibleyoutube.component.MoreActionOption
 import com.huenique.audibleyoutube.component.Playlist
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
@@ -152,8 +148,11 @@ fun AllSongs(
     currentSongPlaying: String,
     songs: MutableMap<String, String>,
     onSongClick: (String, String) -> Unit,
-    onMoreActionClicked: () -> Unit,
+    onDeleteSong: (String) -> Unit
 ) {
+  var moreActionState by remember { mutableStateOf(value = false) }
+  var songTitle by remember { mutableStateOf(value = "") }
+
   Column(
       modifier =
           Modifier.padding(start = 14.dp, end = 14.dp).verticalScroll(rememberScrollState())) {
@@ -165,7 +164,35 @@ fun AllSongs(
           currentSongPlaying = currentSongPlaying,
           playButtonState = playButtonState,
           onClick = { onSongClick(song.key, song.value) },
-          onMoreActionClicked = { onMoreActionClicked() })
+          onMoreActionClicked = {
+            moreActionState = true
+            songTitle = song.key
+          })
+    }
+  }
+
+  when (moreActionState) {
+    true -> {
+      Box(
+          modifier =
+              Modifier.fillMaxSize()
+                  .background(MaterialTheme.colors.background.copy(alpha = 0.6f))
+                  .clickable { moreActionState = false },
+          contentAlignment = Alignment.Center) {
+        Box(
+            modifier =
+                Modifier.background(Color.DarkGray)
+                    .width(LocalConfiguration.current.screenWidthDp.dp / 2)) {
+          Column(modifier = Modifier.padding(start = 14.dp)) {
+            MoreActionOption(
+                text = "Delete",
+                onClick = {
+                  moreActionState = false
+                  onDeleteSong(songTitle)
+                })
+          }
+        }
+      }
     }
   }
 }
