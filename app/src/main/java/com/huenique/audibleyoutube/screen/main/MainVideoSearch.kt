@@ -64,32 +64,36 @@ fun MainVideoSearch(
       },
       onAddToPlaylist = { query: String, mediaSource: File, playlist: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(
-            query = query,
-            file = mediaSource,
-            responseRepo = httpResponseRepository,
-            onFailure = {
-              httpResponseHandler.onHttpError(
-                  viewModel, httpResponseRepoState, httpResponseRepository)
-            },
-            onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
-            context = context,
-            builder = builder,
-            onSinkClose = { musicLibraryManager.addMusicToLibrary(playlist, mediaSource) })
 
         val thumbnailUrl = moreActionState["thumbnail"]
-        val thumbnailFile = moreActionState["videoTitle"]
+        val thumbnailFileName = moreActionState["videoTitle"]?.replace("/", "")
 
-        if (thumbnailUrl != null && thumbnailFile != null) {
-          audibleYoutube.downloadThumbnail(
-              thumbnailUrl = thumbnailUrl,
-              file =
-                  File(
-                      context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                      "$thumbnailFile.jpg"),
+        if (thumbnailUrl != null && thumbnailFileName != null) {
+          val thumbnailFile =
+              File(
+                  context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                  "$thumbnailFileName.jpg")
+
+          audibleYoutube.downloadVideo(
+              query = query,
+              file = mediaSource,
               responseRepo = httpResponseRepository,
-              callbackFn = {},
-          )
+              onFailure = {
+                httpResponseHandler.onHttpError(
+                    viewModel, httpResponseRepoState, httpResponseRepository)
+              },
+              onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
+              context = context,
+              builder = builder,
+              onSinkClose = {
+                musicLibraryManager.addMusicToLibrary(playlist, mediaSource, thumbnailFile)
+                audibleYoutube.downloadThumbnail(
+                    thumbnailUrl = thumbnailUrl,
+                    file = thumbnailFile,
+                    responseRepo = httpResponseRepository,
+                    callbackFn = {},
+                )
+              })
         }
       },
       onCreatePlaylist = {
@@ -109,34 +113,36 @@ fun MainVideoSearch(
       onPlaylistShow = { viewModel.updatePlaylistState(newValue = PlaylistState.OPENED) },
       onDownloadVideo = { query: String, mediaSource: File ->
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.CLOSED)
-        audibleYoutube.downloadVideo(
-            query = query,
-            file = mediaSource,
-            responseRepo = httpResponseRepository,
-            onFailure = {
-              httpResponseHandler.onHttpError(
-                  viewModel, httpResponseRepoState, httpResponseRepository)
-            },
-            onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
-            context = context,
-            builder = builder,
-            onSinkClose = { musicLibraryManager.addMusicToLibrary(musicLibrary, mediaSource) })
 
         val thumbnailUrl = moreActionState["thumbnail"]
-        val thumbnailFile = moreActionState["videoTitle"]
+        val thumbnailFileName = moreActionState["videoTitle"]?.replace("/", "")
 
-        println("thumbnailUrl: $thumbnailUrl\nthumbnailFile: $thumbnailFile")
+        if (thumbnailUrl != null && thumbnailFileName != null) {
+          val thumbnailFile =
+              File(
+                  context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                  "$thumbnailFileName.jpg")
 
-        if (thumbnailUrl != null && thumbnailFile != null) {
-          audibleYoutube.downloadThumbnail(
-              thumbnailUrl = thumbnailUrl,
-              file =
-                  File(
-                      context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                      "$thumbnailFile.jpg"),
+          audibleYoutube.downloadVideo(
+              query = query,
+              file = mediaSource,
               responseRepo = httpResponseRepository,
-              callbackFn = {},
-          )
+              onFailure = {
+                httpResponseHandler.onHttpError(
+                    viewModel, httpResponseRepoState, httpResponseRepository)
+              },
+              onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
+              context = context,
+              builder = builder,
+              onSinkClose = {
+                musicLibraryManager.addMusicToLibrary(musicLibrary, mediaSource, thumbnailFile)
+                audibleYoutube.downloadThumbnail(
+                    thumbnailUrl = thumbnailUrl,
+                    file = thumbnailFile,
+                    responseRepo = httpResponseRepository,
+                    callbackFn = {},
+                )
+              })
         }
       })
 }

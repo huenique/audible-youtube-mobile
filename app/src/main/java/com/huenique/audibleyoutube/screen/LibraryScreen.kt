@@ -79,7 +79,6 @@ fun LibrarySelection(
     onClickAllSongs: () -> Unit
 ) {
   val playlistState by viewModel.playlistState
-  val currentPlaylist by viewModel.currentPlaylist
   var libraryViewState by remember { mutableStateOf("libraryOptions") }
   var listedSongs by remember { mutableMapOf<String, MutableMap<Int, Map<String, String>>>() }
 

@@ -42,7 +42,7 @@ fun MarqueeText(
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     onTextLayout: (TextLayoutResult) -> Unit = {},
-    style: TextStyle = LocalTextStyle.current,
+    style: TextStyle = LocalTextStyle.current
 ) {
   val createText =
       @Composable { localModifier: Modifier ->

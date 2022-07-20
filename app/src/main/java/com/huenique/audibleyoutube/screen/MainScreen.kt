@@ -1,6 +1,7 @@
 package com.huenique.audibleyoutube.screen
 
 import android.media.MediaPlayer
+import android.os.Environment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -29,11 +30,11 @@ import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
 import com.huenique.audibleyoutube.utils.NotificationManager
 import com.huenique.audibleyoutube.utils.RepositoryGetter
+import java.io.File
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -67,23 +68,43 @@ fun MainScreen(
   val playButtonState by mainViewModel.playButtonState
   val currentSongPlaying by mainViewModel.currentSongPlaying
   val currentPlaylistContent by mainViewModel.currentPlaylistContent
+  val currentPlaylist by mainViewModel.currentPlaylist
+  val currentSongCover by mainViewModel.currentSongCover
 
+  // Setup app-wide notification channel so we don't have to instantiate it everytime
   LaunchedEffect(Unit) {
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
   }
 
+  // Auto play next song in the playlist
   mediaPlayer.setOnCompletionListener {
     val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
     nextSongPath?.let { songTitle: String ->
       mainViewModel.updateCurrentSongPlaying(newValue = File(songTitle).nameWithoutExtension)
       mainViewModel.viewModelScope.launch {
         withContext(Dispatchers.IO) {
-          it.reset()
-          it.setDataSource(context, File(nextSongPath).toUri())
-          it.prepare()
-          it.start()
+          try {
+            it.reset()
+            it.setDataSource(context, File(nextSongPath).toUri())
+            it.prepare()
+            it.start()
+          } catch (e: IllegalStateException) {
+            e.printStackTrace()
+          }
         }
       }
+
+      // Point to the path of the song's thumbnail/cover
+      //      if (currentSongPlaying.isNotEmpty()) {
+      //        val playlist =
+      //            File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+      //        val songCover = musicLibraryManager.getSongCover(playlist, currentSongPlaying)
+      //        mainViewModel.updateCurrentSongCover(newValue = songCover)
+      //
+      //        println(
+      //            "\nPLAYLIST: $playlist\nCURRENT SONG: $currentSongPlaying \nSONG COVER:
+      // $currentSongCover")
+      //      }
     }
   }
 
@@ -132,11 +153,13 @@ fun MainScreen(
             searchWidgetState = searchWidgetState,
             playButtonState = playButtonState,
             currentSongPlaying = currentSongPlaying,
+            currentSongCover = currentSongCover,
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
             audibleYoutube = audibleYoutube,
             musicLibraryManager = musicLibraryManager,
             httpResponseHandler = httpResponseHandler,
             mediaPlayer = mediaPlayer,
+            currentPlaylist = currentPlaylist,
             currentPlaylistContent = currentPlaylistContent)
       },
       bottomBar = {
@@ -145,6 +168,7 @@ fun MainScreen(
             MinimizedPlayer(
                 playButtonState = playButtonState,
                 currentSongPlaying = currentSongPlaying,
+                currentSongCover = currentSongCover,
                 onPlayerClick = { navController.navigate(NavigationRoute.PLAYER) },
                 onPlayClick = {
                   when (playButtonState) {
@@ -178,11 +202,13 @@ fun MainNavHost(
     searchWidgetState: SearchWidgetState,
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
+    currentSongCover: String,
     onNavigate: (ScreenNavigationState) -> Unit,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
     httpResponseHandler: HttpResponseHandler,
     mediaPlayer: MediaPlayer,
+    currentPlaylist: String,
     currentPlaylistContent: TreeMap<String, String>
 ) {
   val context = LocalContext.current
@@ -223,13 +249,14 @@ fun MainNavHost(
     composable(NavigationRoute.PLAYLIST) {
       onNavigate(ScreenNavigationState.PLAYLIST)
       val songs = musicLibraryManager.getAllSongs(LocalContext.current)
+      mainViewModel.updateCurrentPlaylist(newValue = "music_library.m3u")
       mainViewModel.updateCurrentPlaylistContent(newValue = songs)
       AllSongs(
           playButtonState = playButtonState,
           currentSongPlaying = currentSongPlaying,
           songs = songs,
           onSongClick = { songTitle: String, songPath: String ->
-            if (songTitle != currentSongPlaying && playButtonState == PlayButtonState.PAUSED) {
+            if (playButtonState == PlayButtonState.PAUSED) {
               mediaPlayer.start()
               mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
             } else if (songTitle == currentSongPlaying &&
@@ -252,6 +279,11 @@ fun MainNavHost(
                 }
               }
             }
+
+            val playlist =
+                File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+            val songCover = musicLibraryManager.getSongCover(playlist, songTitle)
+            mainViewModel.updateCurrentSongCover(newValue = songCover)
           })
     }
     composable(NavigationRoute.PLAYER) {
@@ -259,6 +291,7 @@ fun MainNavHost(
       MaximizedPlayer(
           playButtonState = playButtonState,
           currentSongPlaying = currentSongPlaying,
+          currentSongCover = currentSongCover,
           onPlayClick = {
             when (playButtonState) {
               PlayButtonState.PAUSED -> {
@@ -275,13 +308,22 @@ fun MainNavHost(
             val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
             nextSongPath?.let {
               mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
+              val playlist =
+                  File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+              val songCover = musicLibraryManager.getSongCover(playlist, it)
+              mainViewModel.updateCurrentSongCover(newValue = songCover)
             }
+
             mainViewModel.viewModelScope.launch {
-              withContext(Dispatchers.IO) {
-                mediaPlayer.reset()
-                mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
-                mediaPlayer.prepare()
-                mediaPlayer.start()
+              try {
+                withContext(Dispatchers.IO) {
+                  mediaPlayer.reset()
+                  mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
+                  mediaPlayer.prepare()
+                  mediaPlayer.start()
+                }
+              } catch (e: Exception) {
+                e.printStackTrace()
               }
             }
           },
@@ -289,13 +331,22 @@ fun MainNavHost(
             val nextSongPath = currentPlaylistContent.lowerEntry(currentSongPlaying)?.value
             nextSongPath?.let {
               mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
+              val playlist =
+                  File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+              val songCover = musicLibraryManager.getSongCover(playlist, it)
+              mainViewModel.updateCurrentSongCover(newValue = songCover)
             }
+
             mainViewModel.viewModelScope.launch {
               withContext(Dispatchers.IO) {
-                mediaPlayer.reset()
-                mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
-                mediaPlayer.prepare()
-                mediaPlayer.start()
+                try {
+                  mediaPlayer.reset()
+                  mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
+                  mediaPlayer.prepare()
+                  mediaPlayer.start()
+                } catch (e: Exception) {
+                  e.printStackTrace()
+                }
               }
             }
           },

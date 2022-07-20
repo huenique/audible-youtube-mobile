@@ -55,6 +55,9 @@ class MainViewModel : ViewModel() {
       mutableStateOf(value = TreeMap())
   val currentPlaylistContent = _currentPlaylistContent
 
+  private val _currentSongCover: MutableState<String> = mutableStateOf(value = "")
+  val currentSongCover: State<String> = _currentSongCover
+
   fun updateSearchWidgetState(newValue: SearchWidgetState) {
     _searchWidgetState.value = newValue
   }
@@ -101,5 +104,9 @@ class MainViewModel : ViewModel() {
 
   fun updateCurrentPlaylistContent(newValue: TreeMap<String, String>) {
     _currentPlaylistContent.value = newValue
+  }
+
+  fun updateCurrentSongCover(newValue: String) {
+    _currentSongCover.value = newValue
   }
 }

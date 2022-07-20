@@ -6,23 +6,28 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.state.PlayButtonState
+import java.io.File
 
 @Composable
 fun MaximizedPlayer(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
+    currentSongCover: String,
     onPlayClick: () -> Unit,
     onForwardClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -30,6 +35,8 @@ fun MaximizedPlayer(
 ) {
   // Emulate marquee text effect
   val scrollState = rememberScrollState()
+  val imgContentDesc = "Maximized song cover"
+
   var shouldAnimate by remember { mutableStateOf(true) }
   LaunchedEffect(key1 = shouldAnimate) {
     scrollState.animateScrollTo(
@@ -56,10 +63,21 @@ fun MaximizedPlayer(
     Spacer(modifier = Modifier.height(64.dp))
 
     Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp)) {
-      Image(
-          painter = painterResource(id = R.drawable.placeholder_image),
-          contentDescription = "Song cover",
-          modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+      if (currentSongCover.isNotEmpty()) {
+        Image(
+            painter = rememberAsyncImagePainter(File(currentSongCover)),
+            contentDescription = imgContentDesc,
+            modifier =
+                Modifier.align(alignment = Alignment.CenterHorizontally)
+                    .height(300.dp)
+                    .width(300.dp)
+                    .clip(RoundedCornerShape(12.dp)))
+      } else {
+        Image(
+            painter = painterResource(id = R.drawable.placeholder_image),
+            contentDescription = imgContentDesc,
+            modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+      }
 
       MarqueeText(
           text = currentSongPlaying, fontSize = 24.sp, modifier = Modifier.align(Alignment.Start))
@@ -112,24 +130,38 @@ fun MaximizedPlayer(
 fun MinimizedPlayer(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
+    currentSongCover: String,
     onPlayerClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
     onForwardClick: () -> Unit
 ) {
+  val imgContentDesc = "Song cover"
+  val imgModifier = Modifier.height(56.dp).width(56.dp)
+  val imgAlignment = Alignment.CenterStart
+
   Surface(
       modifier = Modifier.fillMaxWidth().height(56.dp).clickable(onClick = onPlayerClick),
       elevation = AppBarDefaults.BottomAppBarElevation,
       color = MaterialTheme.colors.primaryVariant) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-      Image(
-          painter = painterResource(id = R.drawable.ic_baseline_image),
-          contentDescription = "Song cover",
-          modifier = Modifier.height(56.dp).width(56.dp),
-          alignment = Alignment.CenterStart,
-          colorFilter = ColorFilter.tint(color = MaterialTheme.colors.onPrimary))
+      if (currentSongCover.isNotEmpty()) {
+        Image(
+            painter = rememberAsyncImagePainter(File(currentSongCover)),
+            contentDescription = imgContentDesc,
+            modifier = imgModifier,
+            alignment = imgAlignment)
+      } else {
+        Image(
+            painter = painterResource(id = R.drawable.ic_baseline_image),
+            contentDescription = imgContentDesc,
+            modifier = imgModifier,
+            alignment = imgAlignment,
+            colorFilter = ColorFilter.tint(color = MaterialTheme.colors.onPrimary))
+      }
+
       MarqueeText(
           text = currentSongPlaying,
-          modifier = Modifier.width(198.dp),
+          modifier = Modifier.width(198.dp).padding(start = 14.dp),
           gradientEdgeColor = Color.Transparent)
     }
 
@@ -166,6 +198,7 @@ fun MaximizedPlayerPreview() {
   MaximizedPlayer(
       playButtonState = PlayButtonState.PLAYING,
       currentSongPlaying = "Veeeeerrrryyy Loooonnngg - Title of the song",
+      currentSongCover = "",
       onPlayClick = {},
       onBackClick = {},
       onForwardClick = {},
@@ -176,8 +209,9 @@ fun MaximizedPlayerPreview() {
 @Composable
 fun MinimizedPlayerPreview() {
   MinimizedPlayer(
-      PlayButtonState.PLAYING,
+      playButtonState = PlayButtonState.PLAYING,
       currentSongPlaying = "Veeeeerrrryyy Loooonnngg - Title of the song",
+      currentSongCover = "",
       onForwardClick = {},
       onPlayClick = {},
       onPlayerClick = {})
