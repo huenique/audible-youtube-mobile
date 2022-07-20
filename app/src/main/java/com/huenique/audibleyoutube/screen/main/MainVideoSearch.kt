@@ -16,6 +16,7 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.RecentManager
 import java.io.File
 
 @Composable
@@ -24,6 +25,7 @@ fun MainVideoSearch(
     httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
+    recentManager: RecentManager,
     httpResponseHandler: HttpResponseHandler
 ) {
   val context = LocalContext.current
@@ -93,6 +95,7 @@ fun MainVideoSearch(
                     responseRepo = httpResponseRepository,
                     callbackFn = {},
                 )
+                recentManager.addToRecentlyAdded(context = context, thumbnailFile.absolutePath)
               })
         }
       },
@@ -142,6 +145,7 @@ fun MainVideoSearch(
                     responseRepo = httpResponseRepository,
                     callbackFn = {},
                 )
+                recentManager.addToRecentlyAdded(context = context, thumbnailFile.absolutePath)
               })
         }
       })

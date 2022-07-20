@@ -23,13 +23,8 @@ import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
-import com.huenique.audibleyoutube.state.PlayButtonState
-import com.huenique.audibleyoutube.state.ScreenNavigationState
-import com.huenique.audibleyoutube.state.SearchWidgetState
-import com.huenique.audibleyoutube.utils.HttpResponseHandler
-import com.huenique.audibleyoutube.utils.MusicLibraryManager
-import com.huenique.audibleyoutube.utils.NotificationManager
-import com.huenique.audibleyoutube.utils.RepositoryGetter
+import com.huenique.audibleyoutube.state.*
+import com.huenique.audibleyoutube.utils.*
 import java.io.File
 import java.util.*
 import kotlinx.coroutines.Dispatchers
@@ -49,11 +44,13 @@ fun MainScreen(
     mainViewModel: MainViewModel,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
+    recentManager: RecentManager,
     notificationManager: NotificationManager,
     httpResponseHandler: HttpResponseHandler,
     mediaPlayer: MediaPlayer
 ) {
   val context = LocalContext.current
+  recentManager.createRecentDb(context)
 
   // Navigation controller
   val navController = rememberNavController()
@@ -94,17 +91,27 @@ fun MainScreen(
         }
       }
 
-      // Point to the path of the song's thumbnail/cover
-      //      if (currentSongPlaying.isNotEmpty()) {
-      //        val playlist =
-      //            File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
-      //        val songCover = musicLibraryManager.getSongCover(playlist, currentSongPlaying)
-      //        mainViewModel.updateCurrentSongCover(newValue = songCover)
-      //
-      //        println(
-      //            "\nPLAYLIST: $playlist\nCURRENT SONG: $currentSongPlaying \nSONG COVER:
-      // $currentSongCover")
-      //      }
+      val playlist = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+      val songCover = musicLibraryManager.getSongCover(playlist, songTitle)
+
+      mainViewModel.updateCurrentSongCover(newValue = songCover)
+      recentManager.addToRecentlyPlayed(context, songCover)
+    }
+  }
+
+  when (navBackStackEntry?.destination?.route) {
+    NavigationRoute.PLAYLIST,
+    NavigationRoute.PLAYER,
+    NavigationRoute.HOME,
+    NavigationRoute.LIBRARY,
+    NavigationRoute.SEARCH -> {
+      mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED)
+      mainViewModel.updatePlaylistState(newValue = PlaylistState.CLOSED)
+      mainViewModel.updateSpinnerState(newValue = false)
+
+      // Reset repos to prevent memory hogging
+      mainViewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.INTERRUPTED)
+      httpResponseRepo.update(value = "{}")
     }
   }
 
@@ -157,6 +164,7 @@ fun MainScreen(
             onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
             audibleYoutube = audibleYoutube,
             musicLibraryManager = musicLibraryManager,
+            recentManager = recentManager,
             httpResponseHandler = httpResponseHandler,
             mediaPlayer = mediaPlayer,
             currentPlaylist = currentPlaylist,
@@ -206,6 +214,7 @@ fun MainNavHost(
     onNavigate: (ScreenNavigationState) -> Unit,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
+    recentManager: RecentManager,
     httpResponseHandler: HttpResponseHandler,
     mediaPlayer: MediaPlayer,
     currentPlaylist: String,
@@ -216,12 +225,14 @@ fun MainNavHost(
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
       onNavigate(ScreenNavigationState.HOME)
+
       HomeScreen(
           viewModel = mainViewModel,
           httpResponseRepository = httpResponseRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
+          recentManager = recentManager,
           httpResponseHandler = httpResponseHandler)
     }
     composable(NavigationRoute.SEARCH) {
@@ -231,6 +242,7 @@ fun MainNavHost(
           httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
+          recentManager = recentManager,
           httpResponseHandler = httpResponseHandler)
     }
     composable(NavigationRoute.LIBRARY) {
@@ -243,6 +255,7 @@ fun MainNavHost(
           audibleYoutube = audibleYoutube,
           mediaPlayer = mediaPlayer,
           musicLibraryManager = musicLibraryManager,
+          recentManager = recentManager,
           httpResponseHandler = httpResponseHandler,
           onClickAllSongs = { navController.navigate(NavigationRoute.PLAYLIST) })
     }
@@ -270,6 +283,7 @@ fun MainNavHost(
                 mainViewModel.updateCurrentSongPlaying(newValue = "")
               }
               mainViewModel.updateCurrentSongPlaying(newValue = songTitle)
+
               mainViewModel.viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                   mediaPlayer.reset()
@@ -283,8 +297,11 @@ fun MainNavHost(
             val playlist =
                 File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
             val songCover = musicLibraryManager.getSongCover(playlist, songTitle)
+
             mainViewModel.updateCurrentSongCover(newValue = songCover)
-          })
+            recentManager.addToRecentlyPlayed(context, songCover)
+          },
+          onMoreActionClicked = {})
     }
     composable(NavigationRoute.PLAYER) {
       onNavigate(ScreenNavigationState.PLAYER)
@@ -311,7 +328,9 @@ fun MainNavHost(
               val playlist =
                   File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
               val songCover = musicLibraryManager.getSongCover(playlist, it)
+
               mainViewModel.updateCurrentSongCover(newValue = songCover)
+              recentManager.addToRecentlyPlayed(context, songCover)
             }
 
             mainViewModel.viewModelScope.launch {
@@ -334,7 +353,9 @@ fun MainNavHost(
               val playlist =
                   File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
               val songCover = musicLibraryManager.getSongCover(playlist, it)
+
               mainViewModel.updateCurrentSongCover(newValue = songCover)
+              recentManager.addToRecentlyPlayed(context, songCover)
             }
 
             mainViewModel.viewModelScope.launch {

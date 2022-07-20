@@ -16,11 +16,13 @@ import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
 import com.huenique.audibleyoutube.utils.NotificationManager
+import com.huenique.audibleyoutube.utils.RecentManager
 
 class MainActivity : ComponentActivity() {
   private val mainModel: MainViewModel by viewModels()
   private val audibleYoutube = AudibleYoutubeApi()
   private val musicLibraryManager = MusicLibraryManager()
+  private val recentManager = RecentManager()
   private val notificationManager = NotificationManager()
   private val httpResponseHandler = HttpResponseHandler()
   private val mediaPlayer = MediaPlayer()
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
               mainModel,
               audibleYoutube,
               musicLibraryManager,
+              recentManager,
               notificationManager,
               httpResponseHandler,
               mediaPlayer)

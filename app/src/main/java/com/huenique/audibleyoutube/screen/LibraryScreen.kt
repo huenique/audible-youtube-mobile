@@ -36,6 +36,7 @@ import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.state.SearchWidgetState
 import com.huenique.audibleyoutube.utils.HttpResponseHandler
 import com.huenique.audibleyoutube.utils.MusicLibraryManager
+import com.huenique.audibleyoutube.utils.RecentManager
 import java.io.File
 
 @Composable
@@ -47,6 +48,7 @@ fun LibraryScreen(
     audibleYoutube: AudibleYoutubeApi,
     mediaPlayer: MediaPlayer,
     musicLibraryManager: MusicLibraryManager,
+    recentManager: RecentManager,
     httpResponseHandler: HttpResponseHandler,
     onClickAllSongs: () -> Unit
 ) {
@@ -57,6 +59,7 @@ fun LibraryScreen(
           httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
+          recentManager = recentManager,
           httpResponseHandler = httpResponseHandler)
     }
     SearchWidgetState.CLOSED -> {
@@ -148,7 +151,8 @@ fun AllSongs(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
     songs: MutableMap<String, String>,
-    onSongClick: (String, String) -> Unit
+    onSongClick: (String, String) -> Unit,
+    onMoreActionClicked: () -> Unit,
 ) {
   Column(
       modifier =
@@ -161,7 +165,7 @@ fun AllSongs(
           currentSongPlaying = currentSongPlaying,
           playButtonState = playButtonState,
           onClick = { onSongClick(song.key, song.value) },
-          onMoreActionClicked = {})
+          onMoreActionClicked = { onMoreActionClicked() })
     }
   }
 }

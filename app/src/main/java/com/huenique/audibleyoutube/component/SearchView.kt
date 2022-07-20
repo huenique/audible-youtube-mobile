@@ -33,9 +33,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun SearchView(
@@ -170,7 +170,10 @@ fun ResultContent(
     Card(modifier = Modifier.fillMaxWidth().heightIn(0.dp, 100.dp).padding(top = 10.dp)) {
       Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.width(130.dp)) {
-          AsyncImage(model = thumbnail, contentDescription = null, contentScale = ContentScale.Crop)
+          AsyncImage(
+              model = thumbnail,
+              contentDescription = "Search result thumbnail",
+              contentScale = ContentScale.Crop)
         }
 
         Column(modifier = Modifier.padding(start = 6.dp).weight(1f).fillMaxHeight()) {
@@ -246,7 +249,6 @@ fun ResultDialogue(
           context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
           "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3")
 
-  // TODO: Clean this later
   val createPlaylistDxState = remember { mutableStateOf(value = false) }
   val playlistCreationState = remember { mutableStateOf(value = true) }
   val playlistCreation by playlistCreationState

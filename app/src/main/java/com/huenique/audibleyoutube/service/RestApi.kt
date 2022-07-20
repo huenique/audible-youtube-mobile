@@ -65,7 +65,7 @@ class AudibleYoutubeApi {
                       fos.flush()
                       fos.close()
                     } catch (e: IOException) {
-                      responseRepo.update(value = "message: $e")
+                      responseRepo.update(value = "\nmessage: $e")
                     }
                   }
                   callbackFn()
@@ -92,7 +92,7 @@ class AudibleYoutubeApi {
         .enqueue(
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
-                e.message?.let { responseRepo.update(value = "message: $it") }
+                e.message?.let { responseRepo.update(value = "\nmessage: $it") }
                 onFailure()
               }
 
@@ -186,7 +186,7 @@ class AudibleYoutubeApi {
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
                 e.message?.let {
-                  responseRepo.update(value = "message: $it")
+                  responseRepo.update(value = "\nmessage: $it")
                   callbackFn()
                 }
               }
