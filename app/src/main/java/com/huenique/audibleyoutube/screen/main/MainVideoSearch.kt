@@ -88,7 +88,7 @@ fun MainVideoSearch(
               context = context,
               builder = builder,
               onSinkClose = {
-                musicLibraryManager.addMusicToLibrary(playlist, mediaSource, thumbnailFile)
+                musicLibraryManager.addMusicToLibrary(context, playlist, mediaSource, thumbnailFile)
                 audibleYoutube.downloadThumbnail(
                     thumbnailUrl = thumbnailUrl,
                     file = thumbnailFile,
@@ -138,7 +138,8 @@ fun MainVideoSearch(
               context = context,
               builder = builder,
               onSinkClose = {
-                musicLibraryManager.addMusicToLibrary(musicLibrary, mediaSource, thumbnailFile)
+                musicLibraryManager.addMusicToLibrary(
+                    context, musicLibrary, mediaSource, thumbnailFile)
                 audibleYoutube.downloadThumbnail(
                     thumbnailUrl = thumbnailUrl,
                     file = thumbnailFile,

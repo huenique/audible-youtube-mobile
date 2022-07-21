@@ -201,11 +201,7 @@ fun MinimizedPlayer(
             contentDescription = "Minimized player's play button",
             tint = Color.White)
       }
-      IconButton(
-          onClick = {
-            // prepare new song
-            onForwardClick()
-          }) {
+      IconButton(onClick = { onForwardClick() }) {
         Icon(
             painter = painterResource(id = R.drawable.ic_baseline_skip_next),
             contentDescription = "Minimized player's forward button",

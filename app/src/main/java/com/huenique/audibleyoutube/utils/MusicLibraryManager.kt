@@ -38,7 +38,7 @@ class MusicLibraryManager {
     return musicLibrary
   }
 
-  fun addMusicToLibrary(m3uFile: File, audioFile: File, imageFile: File) {
+  fun addMusicToLibrary(context: Context, m3uFile: File, audioFile: File, imageFile: File) {
     BufferedReader(FileReader(m3uFile)).use { br ->
       var line: String?
 
@@ -57,6 +57,15 @@ class MusicLibraryManager {
     m3uFile.appendText("\n$EXTIMG:${imageFile.absolutePath}")
     m3uFile.appendText(
         "\n$EXTINF:$duration,${audioFile.nameWithoutExtension}\n${audioFile.absolutePath}")
+
+    // Add song to library as well.
+    if (m3uFile.name != MUSIC_LIBRARY_NAME) {
+      addMusicToLibrary(
+          context,
+          File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), MUSIC_LIBRARY_NAME),
+          audioFile,
+          imageFile)
+    }
   }
 
   fun removeSongFromPlaylist(playlist: File, songTitle: String) {}

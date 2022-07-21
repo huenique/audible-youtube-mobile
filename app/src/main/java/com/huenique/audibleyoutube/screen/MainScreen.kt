@@ -203,7 +203,35 @@ fun MainScreen(
                     }
                   }
                 },
-                onForwardClick = {})
+                onForwardClick = {
+                  val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
+                  nextSongPath?.let {
+                    mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
+                    val playlist =
+                        File(
+                            context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
+                            currentPlaylist)
+                    val songCover = musicLibraryManager.getSongCover(playlist, it)
+
+                    mainViewModel.updateCurrentSongCover(newValue = songCover)
+                    recentManager.addToRecentlyPlayed(context, songCover)
+                  }
+
+                  mainViewModel.viewModelScope.launch {
+                    withContext(Dispatchers.IO) {
+                      try {
+                        mediaPlayer.reset()
+                        mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                      } catch (e: Exception) {
+                        e.printStackTrace()
+                      }
+                    }
+                  }
+
+                  mainViewModel.updateCurrentSongDuration(mediaPlayer.duration.toFloat())
+                })
           }
           if (showBottomBar && showMiniPlayer) {
             NavBar(
@@ -317,6 +345,9 @@ fun MainNavHost(
                 File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
             val songCover = musicLibraryManager.getSongCover(playlist, songTitle)
 
+            println("\nplaylist: $playlist")
+            println("songTitle: $songTitle")
+            println("songCover: $songCover\n")
             mainViewModel.updateCurrentSongCover(newValue = songCover)
             recentManager.addToRecentlyPlayed(context, songCover)
           },
@@ -384,11 +415,11 @@ fun MainNavHost(
           onBackClick = {
             val nextSongPath = currentPlaylistContent.lowerEntry(currentSongPlaying)?.value
             nextSongPath?.let {
-              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
               val playlist =
                   File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
               val songCover = musicLibraryManager.getSongCover(playlist, it)
 
+              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
               mainViewModel.updateCurrentSongCover(newValue = songCover)
               recentManager.addToRecentlyPlayed(context, songCover)
             }
