@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.component
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
@@ -66,7 +67,9 @@ fun SearchTopAppBar(
   Surface(
       modifier = Modifier.fillMaxWidth().height(56.dp),
       elevation = AppBarDefaults.TopAppBarElevation,
-      color = MaterialTheme.colors.primary) {
+      color =
+          if (isSystemInDarkTheme()) MaterialTheme.colors.background
+          else MaterialTheme.colors.primary) {
     TextField(
         modifier = Modifier.fillMaxWidth(),
         value = text,

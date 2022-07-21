@@ -1,11 +1,9 @@
 package com.huenique.audibleyoutube.component
 
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
+import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -21,6 +19,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.state.PlayButtonState
+import com.huenique.audibleyoutube.utils.TimeUnitConverter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import java.io.File
 
 @Composable
@@ -28,30 +29,34 @@ fun MaximizedPlayer(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
     currentSongCover: String,
+    currentSongDuration: Float,
+    mediaPlayer: MediaPlayer? = null,
+    onLaunch: (Float) -> Unit,
     onPlayClick: () -> Unit,
     onForwardClick: () -> Unit,
     onBackClick: () -> Unit,
     onArrowDownClick: () -> Unit
 ) {
-  // Emulate marquee text effect
-  val scrollState = rememberScrollState()
+  val timeUnitConverter = TimeUnitConverter()
   val imgContentDesc = "Maximized song cover"
+  var songProgress by remember { mutableStateOf(value = 0f) }
 
-  var shouldAnimate by remember { mutableStateOf(true) }
-  LaunchedEffect(key1 = shouldAnimate) {
-    scrollState.animateScrollTo(
-        scrollState.maxValue,
-        animationSpec = tween(1000, 200, easing = CubicBezierEasing(0f, 0f, 0f, 0f)))
-    scrollState.scrollTo(0)
-    shouldAnimate = !shouldAnimate
+  LaunchedEffect(Unit) {
+    mediaPlayer?.let {
+      onLaunch(it.duration.toFloat())
+      while (isActive) {
+        try {
+          songProgress = it.currentPosition.toFloat()
+          delay(500)
+        } catch (e: ArithmeticException) {
+          e.printStackTrace()
+        }
+      }
+    }
   }
 
-  // Music progress to track playing audio position
-  var currentValue by remember { mutableStateOf(0L) }
-  var isPlaying by remember { mutableStateOf(false) }
-
   Column(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 14.dp),
       verticalArrangement = Arrangement.Top,
       horizontalAlignment = Alignment.CenterHorizontally) {
     IconButton(onClick = { onArrowDownClick() }, modifier = Modifier.align(Alignment.Start)) {
@@ -62,7 +67,7 @@ fun MaximizedPlayer(
 
     Spacer(modifier = Modifier.height(64.dp))
 
-    Column(modifier = Modifier.padding(start = 14.dp, end = 14.dp)) {
+    Column {
       if (currentSongCover.isNotEmpty()) {
         Image(
             painter = rememberAsyncImagePainter(File(currentSongCover)),
@@ -76,7 +81,8 @@ fun MaximizedPlayer(
         Image(
             painter = painterResource(id = R.drawable.placeholder_image),
             contentDescription = imgContentDesc,
-            modifier = Modifier.align(alignment = Alignment.CenterHorizontally))
+            modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
+            colorFilter = ColorFilter.tint(color = MaterialTheme.colors.onBackground))
       }
 
       MarqueeText(
@@ -84,6 +90,22 @@ fun MaximizedPlayer(
     }
 
     Spacer(modifier = Modifier.weight(1f))
+
+    Row(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
+      Text(
+          text = timeUnitConverter.milliToMinSec(songProgress.toLong()),
+          modifier = Modifier.weight(1f))
+      Text(text = timeUnitConverter.milliToMinSec(currentSongDuration.toLong()))
+    }
+
+    Slider(
+        value = songProgress,
+        modifier = Modifier.weight(1f).padding(start = 12.dp, end = 12.dp),
+        onValueChange = {
+          songProgress = it
+          mediaPlayer?.seekTo(it.toInt())
+        },
+        valueRange = 0f..currentSongDuration)
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
       IconButton(
@@ -156,13 +178,14 @@ fun MinimizedPlayer(
             contentDescription = imgContentDesc,
             modifier = imgModifier,
             alignment = imgAlignment,
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colors.onPrimary))
+            colorFilter = ColorFilter.tint(color = Color.White))
       }
 
       MarqueeText(
           text = currentSongPlaying,
           modifier = Modifier.width(198.dp).padding(start = 14.dp),
-          gradientEdgeColor = Color.Transparent)
+          gradientEdgeColor = Color.Transparent,
+          color = Color.White)
     }
 
     Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
@@ -199,6 +222,8 @@ fun MaximizedPlayerPreview() {
       playButtonState = PlayButtonState.PLAYING,
       currentSongPlaying = "Veeeeerrrryyy Loooonnngg - Title of the song",
       currentSongCover = "",
+      currentSongDuration = 100f,
+      onLaunch = {},
       onPlayClick = {},
       onBackClick = {},
       onForwardClick = {},

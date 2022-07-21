@@ -67,10 +67,15 @@ fun MainScreen(
   val currentPlaylistContent by mainViewModel.currentPlaylistContent
   val currentPlaylist by mainViewModel.currentPlaylist
   val currentSongCover by mainViewModel.currentSongCover
+  val currentSongDuration by mainViewModel.currentSongDuration
 
-  // Setup app-wide notification channel so we don't have to instantiate it everytime
+  // Setup app-wide notification channel so we don't have to instantiate it everytime.
   LaunchedEffect(Unit) {
     notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
+  }
+
+  mediaPlayer.setOnPreparedListener {
+    mainViewModel.updateCurrentSongDuration(newValue = it.duration.toFloat())
   }
 
   // Auto play next song in the playlist
@@ -85,7 +90,7 @@ fun MainScreen(
             it.setDataSource(context, File(nextSongPath).toUri())
             it.prepare()
             it.start()
-          } catch (e: IllegalStateException) {
+          } catch (e: Exception) {
             e.printStackTrace()
           }
         }
@@ -99,6 +104,7 @@ fun MainScreen(
     }
   }
 
+  // Avoid "Screen Reset" error screen
   when (navBackStackEntry?.destination?.route) {
     NavigationRoute.PLAYLIST,
     NavigationRoute.PLAYER,
@@ -161,14 +167,15 @@ fun MainScreen(
             playButtonState = playButtonState,
             currentSongPlaying = currentSongPlaying,
             currentSongCover = currentSongCover,
-            onNavigate = { mainViewModel.updateScreenNavState(newValue = it) },
+            currentSongDuration = currentSongDuration,
             audibleYoutube = audibleYoutube,
             musicLibraryManager = musicLibraryManager,
             recentManager = recentManager,
             httpResponseHandler = httpResponseHandler,
             mediaPlayer = mediaPlayer,
             currentPlaylist = currentPlaylist,
-            currentPlaylistContent = currentPlaylistContent)
+            currentPlaylistContent = currentPlaylistContent,
+            onNavigate = { mainViewModel.updateScreenNavState(newValue = it) })
       },
       bottomBar = {
         Column {
@@ -211,14 +218,15 @@ fun MainNavHost(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
     currentSongCover: String,
-    onNavigate: (ScreenNavigationState) -> Unit,
+    currentSongDuration: Float,
     audibleYoutube: AudibleYoutubeApi,
     musicLibraryManager: MusicLibraryManager,
     recentManager: RecentManager,
     httpResponseHandler: HttpResponseHandler,
     mediaPlayer: MediaPlayer,
     currentPlaylist: String,
-    currentPlaylistContent: TreeMap<String, String>
+    currentPlaylistContent: TreeMap<String, String>,
+    onNavigate: (ScreenNavigationState) -> Unit
 ) {
   val context = LocalContext.current
 
@@ -284,14 +292,18 @@ fun MainNavHost(
               if (currentSongPlaying.isNotEmpty()) {
                 mainViewModel.updateCurrentSongPlaying(newValue = "")
               }
-              mainViewModel.updateCurrentSongPlaying(newValue = songTitle)
 
+              mainViewModel.updateCurrentSongPlaying(newValue = songTitle)
               mainViewModel.viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                  mediaPlayer.reset()
-                  mediaPlayer.setDataSource(context, File(songPath).toUri())
-                  mediaPlayer.prepare()
-                  mediaPlayer.start()
+                  try {
+                    mediaPlayer.reset()
+                    mediaPlayer.setDataSource(context, File(songPath).toUri())
+                    mediaPlayer.prepare()
+                    mediaPlayer.start()
+                  } catch (e: Exception) {
+                    e.printStackTrace()
+                  }
                 }
               }
             }
@@ -322,6 +334,9 @@ fun MainNavHost(
           playButtonState = playButtonState,
           currentSongPlaying = currentSongPlaying,
           currentSongCover = currentSongCover,
+          currentSongDuration = currentSongDuration,
+          mediaPlayer = mediaPlayer,
+          onLaunch = { mainViewModel.updateCurrentSongDuration(it) },
           onPlayClick = {
             when (playButtonState) {
               PlayButtonState.PAUSED -> {
@@ -347,17 +362,19 @@ fun MainNavHost(
             }
 
             mainViewModel.viewModelScope.launch {
-              try {
-                withContext(Dispatchers.IO) {
+              withContext(Dispatchers.IO) {
+                try {
                   mediaPlayer.reset()
                   mediaPlayer.setDataSource(context, File(nextSongPath).toUri())
                   mediaPlayer.prepare()
                   mediaPlayer.start()
+                } catch (e: Exception) {
+                  e.printStackTrace()
                 }
-              } catch (e: Exception) {
-                e.printStackTrace()
               }
             }
+
+            mainViewModel.updateCurrentSongDuration(mediaPlayer.duration.toFloat())
           },
           onBackClick = {
             val nextSongPath = currentPlaylistContent.lowerEntry(currentSongPlaying)?.value
@@ -383,6 +400,8 @@ fun MainNavHost(
                 }
               }
             }
+
+            mainViewModel.updateCurrentSongDuration(mediaPlayer.duration.toFloat())
           },
           onArrowDownClick = { navController.popBackStack() })
     }

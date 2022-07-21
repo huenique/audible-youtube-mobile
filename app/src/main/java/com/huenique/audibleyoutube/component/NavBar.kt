@@ -1,5 +1,6 @@
 package com.huenique.audibleyoutube.component
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,21 +19,35 @@ import com.huenique.audibleyoutube.R
 
 @Composable
 fun NavBar(onHomeClick: () -> Unit, onSearchClick: () -> Unit, onLibraryClick: () -> Unit) {
+  val isSysInDark = isSystemInDarkTheme()
+  val navIconTint = if (isSystemInDarkTheme()) MaterialTheme.colors.onBackground else Color.White
+
   Surface(
       modifier = Modifier.fillMaxWidth().height(56.dp),
       elevation = AppBarDefaults.BottomAppBarElevation,
-      color = MaterialTheme.colors.primary) {
+      color = if (isSysInDark) MaterialTheme.colors.background else MaterialTheme.colors.primary) {
     Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-      NavIcon(iconName = "Home", iconImage = Icons.Filled.Home, onClick = onHomeClick)
-      NavIcon(iconName = "Search", iconImage = Icons.Filled.Search, onClick = onSearchClick)
       NavIcon(
-          iconName = "Library", iconImage = R.drawable.ic_library_music, onClick = onLibraryClick)
+          iconName = "Home",
+          tint = navIconTint,
+          iconImage = Icons.Filled.Home,
+          onClick = onHomeClick)
+      NavIcon(
+          iconName = "Search",
+          tint = navIconTint,
+          iconImage = Icons.Filled.Search,
+          onClick = onSearchClick)
+      NavIcon(
+          iconName = "Library",
+          tint = navIconTint,
+          iconImage = R.drawable.ic_library_music,
+          onClick = onLibraryClick)
     }
   }
 }
 
 @Composable
-fun NavIcon(iconName: String, iconImage: Any, onClick: () -> Unit) {
+fun NavIcon(iconName: String, tint: Color, iconImage: Any, onClick: () -> Unit) {
   IconButton(onClick = onClick) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -40,16 +55,14 @@ fun NavIcon(iconName: String, iconImage: Any, onClick: () -> Unit) {
       when (iconImage) {
         is Int -> {
           Icon(
-              painter = painterResource(id = iconImage),
-              contentDescription = iconName,
-              tint = Color.White)
+              painter = painterResource(id = iconImage), contentDescription = iconName, tint = tint)
         }
         is ImageVector -> {
-          Icon(imageVector = iconImage, contentDescription = iconName, tint = Color.White)
+          Icon(imageVector = iconImage, contentDescription = iconName, tint = tint)
         }
         else -> {}
       }
-      Text(text = iconName, fontSize = 10.sp)
+      Text(text = iconName, color = tint, fontSize = 10.sp)
     }
   }
 }

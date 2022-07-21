@@ -58,6 +58,9 @@ class MainViewModel : ViewModel() {
   private val _currentSongCover: MutableState<String> = mutableStateOf(value = "")
   val currentSongCover: State<String> = _currentSongCover
 
+  private val _currentSongDuration: MutableState<Float> = mutableStateOf(value = 0f)
+  val currentSongDuration: State<Float> = _currentSongDuration
+
   fun updateSearchWidgetState(newValue: SearchWidgetState) {
     _searchWidgetState.value = newValue
   }
@@ -108,5 +111,9 @@ class MainViewModel : ViewModel() {
 
   fun updateCurrentSongCover(newValue: String) {
     _currentSongCover.value = newValue
+  }
+
+  fun updateCurrentSongDuration(newValue: Float) {
+    _currentSongDuration.value = newValue
   }
 }
