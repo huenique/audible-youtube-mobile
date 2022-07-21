@@ -35,7 +35,7 @@ class AudibleYoutubeApi {
               override fun onFailure(call: Call, e: IOException) {
                 e.message?.let { errMSg ->
                   responseRepo.update(
-                      value = "\nmessage: ${errMSg.replaceFirstChar { it.uppercaseChar() }}")
+                      value = "\nMessage: ${errMSg.replaceFirstChar { it.uppercaseChar() }}")
                   callbackFn()
                 }
               }
@@ -48,9 +48,9 @@ class AudibleYoutubeApi {
                         jsonContent?.let { it.getJSONArray("errors").get(0) as String } ?: ""
                     responseRepo.update(
                         value =
-                            "\ncode: ${response.code}" +
-                                "\nmessage: ${response.message}" +
-                                "\nreason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                            "\nCode: ${response.code}" +
+                                "\nMessage: ${response.message}" +
+                                "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
                   } else {
                     val inputStream = response.body!!.byteStream()
                     val buffer = ByteArray(1024 * 4)
@@ -65,7 +65,7 @@ class AudibleYoutubeApi {
                       fos.flush()
                       fos.close()
                     } catch (e: IOException) {
-                      responseRepo.update(value = "\nmessage: $e")
+                      responseRepo.update(value = "\nMessage: $e")
                     }
                   }
                   callbackFn()
@@ -92,7 +92,10 @@ class AudibleYoutubeApi {
         .enqueue(
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
-                e.message?.let { responseRepo.update(value = "\nmessage: $it") }
+                e.message?.let {
+                  responseRepo.update(
+                      value = "\nMessage: ${it.replaceFirstChar { it.uppercaseChar()}}")
+                }
                 onFailure()
               }
 
@@ -113,9 +116,9 @@ class AudibleYoutubeApi {
                           else ""
                       responseRepo.update(
                           value =
-                              "\ncode: ${response.code}" +
-                                  "\nmessage: ${response.message}" +
-                                  "\nreason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                              "\nCode: ${response.code}" +
+                                  "\nMessage: ${response.message}" +
+                                  "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
                     }
                   } else {
                     val respBody = response.body
@@ -186,7 +189,7 @@ class AudibleYoutubeApi {
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
                 e.message?.let {
-                  responseRepo.update(value = "\nmessage: $it")
+                  responseRepo.update(value = "\nMessage: $it")
                   callbackFn()
                 }
               }
@@ -201,9 +204,9 @@ class AudibleYoutubeApi {
                         else ""
                     responseRepo.update(
                         value =
-                            "\ncode: ${response.code}" +
-                                "\nmessage: ${response.message}" +
-                                "\nreason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                            "\nCode: ${response.code}" +
+                                "\nMessage: ${response.message}" +
+                                "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
                   } else {
                     responseRepo.update(response.body!!.string())
                   }

@@ -173,14 +173,12 @@ class MusicLibraryManager {
     return songs
   }
 
-  fun getSongsFromPlaylist(playlist: File): MutableMap<Int, Map<String, String>> {
-    val listedSongs = mutableMapOf<Int, Map<String, String>>()
+  fun getSongsFromPlaylist(playlist: File): TreeMap<String, String> {
+    val songs = TreeMap<String, String>()
 
     // Collect songs listed in audio playlist file.
     BufferedReader(FileReader(playlist)).use { br ->
       var line: String?
-      var entryId = 0
-      var songDuration = ""
       var songTitle = ""
       var songPath = ""
 
@@ -191,25 +189,20 @@ class MusicLibraryManager {
         if (line!!.take(7) == EXTINF) {
           // Extract data after #EXTINF: (e.g. 111,Song Title)
           val songMetadata = line!!.split(":")[1].split(",")
-          songDuration = songMetadata[0]
           songTitle = songMetadata[1]
         } else if (line!!.startsWith("/")) {
           songPath = line as String
         }
 
-        if (songDuration.isNotEmpty() && songTitle.isNotEmpty() && songPath.isNotEmpty()) {
-          listedSongs[entryId] =
-              mapOf(
-                  "songDuration" to songDuration, "songTitle" to songTitle, "songPath" to songPath)
-          songDuration = ""
+        if (songTitle.isNotEmpty() && songPath.isNotEmpty()) {
+          songs[songTitle] = songPath
           songTitle = ""
           songPath = ""
         }
-        entryId += 1
       }
     }
 
-    return listedSongs
+    return songs
   }
 
   fun getSongCover(playlist: File, songTitle: String): String {

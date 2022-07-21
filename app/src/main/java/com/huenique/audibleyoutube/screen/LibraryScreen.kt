@@ -1,6 +1,5 @@
 package com.huenique.audibleyoutube.screen
 
-import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -19,9 +18,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.component.MoreActionOption
-import com.huenique.audibleyoutube.component.Playlist
 import com.huenique.audibleyoutube.model.MainViewModel
 import com.huenique.audibleyoutube.repository.HttpResponseRepository
 import com.huenique.audibleyoutube.screen.main.MainPlaylistSelection
@@ -37,12 +36,11 @@ import java.io.File
 
 @Composable
 fun LibraryScreen(
-    searchWidgetState: SearchWidgetState,
     viewModel: MainViewModel,
-    playButtonState: PlayButtonState,
+    navController: NavHostController,
+    searchWidgetState: SearchWidgetState,
     httpResponseRepository: HttpResponseRepository,
     audibleYoutube: AudibleYoutubeApi,
-    mediaPlayer: MediaPlayer,
     musicLibraryManager: MusicLibraryManager,
     recentManager: RecentManager,
     httpResponseHandler: HttpResponseHandler,
@@ -61,8 +59,7 @@ fun LibraryScreen(
     SearchWidgetState.CLOSED -> {
       LibrarySelection(
           viewModel = viewModel,
-          playButtonState = playButtonState,
-          mediaPlayer = mediaPlayer,
+          navController = navController,
           musicLibraryManager = musicLibraryManager,
           onClickAllSongs = onClickAllSongs)
     }
@@ -72,14 +69,12 @@ fun LibraryScreen(
 @Composable
 fun LibrarySelection(
     viewModel: MainViewModel,
-    playButtonState: PlayButtonState,
-    mediaPlayer: MediaPlayer,
+    navController: NavHostController,
     musicLibraryManager: MusicLibraryManager,
     onClickAllSongs: () -> Unit
 ) {
   val playlistState by viewModel.playlistState
   var libraryViewState by remember { mutableStateOf("libraryOptions") }
-  var listedSongs by remember { mutableMapOf<String, MutableMap<Int, Map<String, String>>>() }
 
   when (libraryViewState) {
     "playlistSelection" -> {
@@ -114,7 +109,7 @@ fun LibrarySelection(
     }
     "playlistSelection" -> {
       MainPlaylistSelection(
-          playlistState,
+          playlistState = playlistState,
           onCreatePlaylist = {
               externalFilesDir: File,
               playlistName: String,
@@ -127,23 +122,17 @@ fun LibrarySelection(
             }
           },
           onSelectPlaylist = { playlist: File, playlistName: String ->
-            listedSongs = musicLibraryManager.getSongsFromPlaylist(playlist)
-            viewModel.updateCurrentPlaylist(playlistName)
-            libraryViewState = "playlist"
+            val songs = musicLibraryManager.getSongsFromPlaylist(playlist)
+            viewModel.updateCurrentPlaylistContent(newValue = songs)
+            viewModel.updateCurrentPlaylist("$playlistName.m3u")
+            navController.navigate(NavigationRoute.PLAYLIST)
           })
-    }
-    "playlist" -> {
-      Playlist(
-          viewModel = viewModel,
-          playButtonState = playButtonState,
-          songs = listedSongs,
-          mediaPlayer = mediaPlayer)
     }
   }
 }
 
 @Composable
-fun AllSongs(
+fun Playlist(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
     songs: MutableMap<String, String>,

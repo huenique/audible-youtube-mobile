@@ -135,7 +135,7 @@ fun ErrorContent(message: String) {
   Column(horizontalAlignment = Alignment.Start) {
     Text(text = "Oops! Something went wrong. Please try again.", fontWeight = FontWeight.Bold)
     Text(
-        text = if (message == "{}") "\nmessage: Screen Reset" else message,
+        text = if (message == "{}") "\nMessage: Screen Reset" else message,
         color = MaterialTheme.colors.error)
     Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
     Text(text = "Other things you can do:", textDecoration = TextDecoration.Underline)

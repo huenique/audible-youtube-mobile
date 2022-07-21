@@ -138,7 +138,13 @@ fun MainScreen(
         when (navBackStackEntry?.destination?.route) {
           NavigationRoute.PLAYLIST -> {
             TopAppBar(
-                title = { Text(text = "All songs") },
+                title = {
+                  Text(
+                      text =
+                          if (currentPlaylist != "music_library.m3u")
+                              currentPlaylist.replace(".m3u", "")
+                          else "All songs")
+                },
                 navigationIcon = {
                   IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
@@ -257,27 +263,26 @@ fun MainNavHost(
       onNavigate(ScreenNavigationState.LIBRARY)
       LibraryScreen(
           viewModel = mainViewModel,
-          playButtonState = playButtonState,
-          httpResponseRepository = httpResponseRepository,
+          navController = navController,
           searchWidgetState = searchWidgetState,
+          httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
-          mediaPlayer = mediaPlayer,
           musicLibraryManager = musicLibraryManager,
           recentManager = recentManager,
           httpResponseHandler = httpResponseHandler,
-          onClickAllSongs = { navController.navigate(NavigationRoute.PLAYLIST) })
+          onClickAllSongs = {
+            val songs = musicLibraryManager.getAllSongs(context)
+            mainViewModel.updateCurrentPlaylistContent(newValue = songs)
+            mainViewModel.updateCurrentPlaylist(newValue = "music_library.m3u")
+            navController.navigate(NavigationRoute.PLAYLIST)
+          })
     }
     composable(NavigationRoute.PLAYLIST) {
       onNavigate(ScreenNavigationState.PLAYLIST)
-      val songs = musicLibraryManager.getAllSongs(LocalContext.current)
-
-      mainViewModel.updateCurrentPlaylist(newValue = "music_library.m3u")
-      mainViewModel.updateCurrentPlaylistContent(newValue = songs)
-
-      AllSongs(
+      Playlist(
           playButtonState = playButtonState,
           currentSongPlaying = currentSongPlaying,
-          songs = songs,
+          songs = currentPlaylistContent,
           onSongClick = { songTitle: String, songPath: String ->
             if (playButtonState == PlayButtonState.PAUSED) {
               mediaPlayer.start()
