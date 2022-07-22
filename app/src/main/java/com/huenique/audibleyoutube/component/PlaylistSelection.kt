@@ -60,10 +60,7 @@ fun PlaylistMenu(
   val musicDir = Environment.DIRECTORY_MUSIC
   val isSysInDark = isSystemInDarkTheme()
 
-  Box(
-      modifier =
-          Modifier.fillMaxSize()
-              .background(color = if (isSysInDark) Color.Black else Color.White)) {
+  Surface(modifier = Modifier.fillMaxSize()) {
     Column(modifier = Modifier.padding(start = 18.dp, end = 18.dp)) {
       Box(modifier = Modifier.height(40.dp)) {}
 
