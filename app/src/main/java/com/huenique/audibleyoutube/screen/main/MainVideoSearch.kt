@@ -60,7 +60,7 @@ fun MainVideoSearch(
       successResponseState = successResponseState,
       isLoading = isLoading,
       onContentLoad = { viewModel.updateSpinnerState(newValue = it) },
-      onMoreActionClicked = {
+      onClickMoreAction = {
         viewModel.updatePlaylistState(newValue = PlaylistState.PENDING)
         viewModel.updateActionRepoState(newValue = ActionRepositoryState.OPENED)
       },

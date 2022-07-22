@@ -153,7 +153,7 @@ fun Playlist(
           currentSongPlaying = currentSongPlaying,
           playButtonState = playButtonState,
           onClick = { onSongClick(song.key, song.value) },
-          onMoreActionClicked = {
+          onClickMoreAction = {
             moreActionState = true
             songTitle = song.key
           })
@@ -214,7 +214,7 @@ fun Song(
     currentSongPlaying: String,
     playButtonState: PlayButtonState,
     onClick: () -> Unit,
-    onMoreActionClicked: () -> Unit
+    onClickMoreAction: () -> Unit
 ) {
   Row(
       modifier =
@@ -247,7 +247,7 @@ fun Song(
       }
     }
 
-    IconButton(onClick = { onMoreActionClicked() }) {
+    IconButton(onClick = { onClickMoreAction() }) {
       Icon(
           imageVector = Icons.Rounded.MoreVert,
           modifier = Modifier.size(24.dp),

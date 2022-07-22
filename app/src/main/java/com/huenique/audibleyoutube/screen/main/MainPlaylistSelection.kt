@@ -21,7 +21,8 @@ fun MainPlaylistSelection(
       playlistCreation = playlistCreation,
       onPlaylistCreation = { playlistCreationState.value = it },
       onCreatePlaylist = { createPlaylistDxState.value = it },
-      onSelectPlaylist = onSelectPlaylist)
+      onSelectPlaylist = onSelectPlaylist,
+      onDeletePlaylist = { playlist: File -> playlist.delete() })
   CreatePlaylistDialogue(
       onCreatePlaylist = onCreatePlaylist,
       onPlaylistCreation = { playlistCreationState.value = it },

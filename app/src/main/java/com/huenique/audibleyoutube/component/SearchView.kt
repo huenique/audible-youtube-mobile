@@ -33,9 +33,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun SearchView(
@@ -47,7 +47,7 @@ fun SearchView(
     searchResultRepo: HttpResponseRepository,
     isLoading: Boolean,
     onContentLoad: (Boolean) -> Unit,
-    onMoreActionClicked: () -> Unit,
+    onClickMoreAction: () -> Unit,
     onAddToPlaylist: (String, File, File) -> Unit,
     onCreatePlaylist: (File, String, MutableState<String>) -> Unit,
     onCloseDialogue: () -> Unit,
@@ -59,7 +59,7 @@ fun SearchView(
   when (searchResultRepoState) {
     HttpResponseRepositoryState.CHANGED -> {
       onContentLoad(false)
-      VariableContent(searchResultRepo, moreActionState, onMoreActionClicked)
+      VariableContent(searchResultRepo, moreActionState, onClickMoreAction)
       MainDialogue(
           actionRepoState = actionRepoState,
           moreActionState = moreActionState,
@@ -104,7 +104,7 @@ fun PreLoader() {
 fun VariableContent(
     searchResultRepo: HttpResponseRepository,
     moreActionState: SnapshotStateMap<String, String>,
-    onMoreActionClicked: () -> Unit
+    onClickMoreAction: () -> Unit
 ) {
   Column(
       modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -122,7 +122,7 @@ fun VariableContent(
       ResultContent(
           json,
           moreActionState,
-          onMoreActionClicked,
+          onClickMoreAction,
       )
     } else {
       ErrorContent(result)
@@ -151,7 +151,7 @@ fun ErrorContent(message: String) {
 fun ResultContent(
     json: JSONObject,
     moreActionState: SnapshotStateMap<String, String>,
-    onMoreActionClicked: () -> Unit
+    onClickMoreAction: () -> Unit
 ) {
   // For the response structure, see
   // https://audible-youtube.herokuapp.com/docs#/videos/Search_search_get
@@ -193,7 +193,7 @@ fun ResultContent(
               moreActionState["videoLink"] = videoLink
               moreActionState["videoTitle"] = videoTitle
               moreActionState["thumbnail"] = thumbnail
-              onMoreActionClicked()
+              onClickMoreAction()
             }) {
           Icon(
               imageVector = Icons.Rounded.MoreVert,
@@ -263,7 +263,8 @@ fun ResultDialogue(
         if (!successResponseState) {
           Toast.makeText(context, "1 song added to $playlistName", Toast.LENGTH_SHORT).show()
         }
-      })
+      },
+      onDeletePlaylist = { playlist: File -> playlist.delete() })
   CreatePlaylistDialogue(
       onCreatePlaylist = onCreatePlaylist,
       onPlaylistCreation = { playlistCreationState.value = it },
