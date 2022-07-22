@@ -336,9 +336,6 @@ fun MainNavHost(
                 File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
             val songCover = musicLibraryManager.getSongCover(playlist, songTitle)
 
-            println("\nplaylist: $playlist")
-            println("songTitle: $songTitle")
-            println("songCover: $songCover\n")
             mainViewModel.updateCurrentSongCover(newValue = songCover)
             recentManager.addToRecentlyPlayed(context, songCover)
           },
@@ -352,7 +349,10 @@ fun MainNavHost(
               mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PAUSED)
             }
 
-            navController.navigate(NavigationRoute.PLAYLIST)
+            val playlist =
+                File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
+            val songs = musicLibraryManager.getSongsFromPlaylist(playlist)
+            mainViewModel.updateCurrentPlaylistContent(newValue = songs)
           })
     }
     composable(NavigationRoute.PLAYER) {
