@@ -25,11 +25,11 @@ import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.*
 import com.huenique.audibleyoutube.utils.*
+import java.io.File
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -109,8 +109,7 @@ fun MainScreen(
     NavigationRoute.PLAYLIST,
     NavigationRoute.PLAYER,
     NavigationRoute.HOME,
-    NavigationRoute.LIBRARY,
-    NavigationRoute.SEARCH -> {
+    NavigationRoute.LIBRARY -> {
       mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.CLOSED)
       mainViewModel.updatePlaylistState(newValue = PlaylistState.CLOSED)
       mainViewModel.updateSpinnerState(newValue = false)
@@ -236,7 +235,9 @@ fun MainScreen(
           if (showBottomBar && showMiniPlayer) {
             NavBar(
                 onHomeClick = { navController.navigate(NavigationRoute.HOME) },
-                onSearchClick = { navController.navigate(NavigationRoute.SEARCH) },
+                onSearchClick = {
+                  mainViewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)
+                },
                 onLibraryClick = { navController.navigate(NavigationRoute.LIBRARY) })
           }
         }
@@ -272,16 +273,6 @@ fun MainNavHost(
           viewModel = mainViewModel,
           httpResponseRepository = httpResponseRepository,
           searchWidgetState = searchWidgetState,
-          audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager,
-          recentManager = recentManager,
-          httpResponseHandler = httpResponseHandler)
-    }
-    composable(NavigationRoute.SEARCH) {
-      onNavigate(ScreenNavigationState.SEARCH)
-      SearchScreen(
-          viewModel = mainViewModel,
-          httpResponseRepository = httpResponseRepository,
           audibleYoutube = audibleYoutube,
           musicLibraryManager = musicLibraryManager,
           recentManager = recentManager,

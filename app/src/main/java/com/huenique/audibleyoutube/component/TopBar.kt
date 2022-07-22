@@ -10,8 +10,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -64,6 +68,8 @@ fun SearchTopAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
+  val focusRequester = remember { FocusRequester() }
+
   Surface(
       modifier = Modifier.fillMaxWidth().height(56.dp),
       elevation = AppBarDefaults.TopAppBarElevation,
@@ -71,7 +77,7 @@ fun SearchTopAppBar(
           if (isSystemInDarkTheme()) MaterialTheme.colors.background
           else MaterialTheme.colors.primary) {
     TextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
         value = text,
         onValueChange = { onTextChange(it) },
         placeholder = {
@@ -112,6 +118,8 @@ fun SearchTopAppBar(
                 backgroundColor = Color.Transparent,
                 cursorColor = Color.White.copy(alpha = ContentAlpha.medium)))
   }
+
+  LaunchedEffect(Unit) { focusRequester.requestFocus() }
 }
 
 @Composable
