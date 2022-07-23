@@ -200,13 +200,14 @@ fun MainScreen(
                 onForwardClick = {
                   val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
                   nextSongPath?.let {
-                    mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
                     val playlist =
                         File(
                             context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
                             currentPlaylist)
                     val songCover = musicLibraryManager.getSongCover(playlist, it)
 
+                    mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
+                    mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
                     mainViewModel.updateCurrentSongCover(newValue = songCover)
                     recentManager.addToRecentlyPlayed(context, songCover)
                   }
@@ -378,11 +379,12 @@ fun MainNavHost(
           onForwardClick = {
             val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
             nextSongPath?.let {
-              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
               val playlist =
                   File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
               val songCover = musicLibraryManager.getSongCover(playlist, it)
 
+              mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
+              mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
               mainViewModel.updateCurrentSongCover(newValue = songCover)
               recentManager.addToRecentlyPlayed(context, songCover)
             }
@@ -409,6 +411,7 @@ fun MainNavHost(
                   File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), currentPlaylist)
               val songCover = musicLibraryManager.getSongCover(playlist, it)
 
+              mainViewModel.updatePlayButtonState(newValue = PlayButtonState.PLAYING)
               mainViewModel.updateCurrentSongPlaying(newValue = File(it).nameWithoutExtension)
               mainViewModel.updateCurrentSongCover(newValue = songCover)
               recentManager.addToRecentlyPlayed(context, songCover)
