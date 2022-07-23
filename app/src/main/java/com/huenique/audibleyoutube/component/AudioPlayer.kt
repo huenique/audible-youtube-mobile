@@ -30,30 +30,16 @@ fun MaximizedPlayer(
     currentSongPlaying: String,
     currentSongCover: String,
     currentSongDuration: Float,
-    mediaPlayer: MediaPlayer? = null,
     onLaunch: (Float) -> Unit,
     onPlayClick: () -> Unit,
     onForwardClick: () -> Unit,
     onBackClick: () -> Unit,
-    onArrowDownClick: () -> Unit
+    onArrowDownClick: () -> Unit,
+    mediaPlayer: MediaPlayer? = null
 ) {
   val timeUnitConverter = TimeUnitConverter()
   val imgContentDesc = "Maximized song cover"
   var songProgress by remember { mutableStateOf(value = 0f) }
-
-  LaunchedEffect(Unit) {
-    mediaPlayer?.let {
-      onLaunch(it.duration.toFloat())
-      while (isActive) {
-        try {
-          songProgress = it.currentPosition.toFloat()
-          delay(500)
-        } catch (e: ArithmeticException) {
-          e.printStackTrace()
-        }
-      }
-    }
-  }
 
   Column(
       modifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 14.dp),
@@ -145,6 +131,20 @@ fun MaximizedPlayer(
 
     // NOTE: The size should be equal to the navigation bar for consistency.
     Spacer(modifier = Modifier.height(56.dp))
+  }
+
+  LaunchedEffect(Unit) {
+    mediaPlayer?.let {
+      onLaunch(it.duration.toFloat())
+      while (isActive) {
+        try {
+          songProgress = it.currentPosition.toFloat()
+          delay(500)
+        } catch (e: ArithmeticException) {
+          e.printStackTrace()
+        }
+      }
+    }
   }
 }
 

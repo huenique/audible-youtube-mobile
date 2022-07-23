@@ -69,16 +69,11 @@ fun MainScreen(
   val currentSongCover by mainViewModel.currentSongCover
   val currentSongDuration by mainViewModel.currentSongDuration
 
-  // Setup app-wide notification channel so we don't have to instantiate it everytime.
-  LaunchedEffect(Unit) {
-    notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
-  }
-
   mediaPlayer.setOnPreparedListener {
     mainViewModel.updateCurrentSongDuration(newValue = it.duration.toFloat())
   }
 
-  // Auto play next song in the playlist
+  // Auto play next song in the playlist.
   mediaPlayer.setOnCompletionListener {
     val nextSongPath = currentPlaylistContent.higherEntry(currentSongPlaying)?.value
     nextSongPath?.let { songTitle: String ->
@@ -104,7 +99,7 @@ fun MainScreen(
     }
   }
 
-  // Avoid "Screen Reset" error screen
+  // Avoid "Screen Reset" error screen.
   when (navBackStackEntry?.destination?.route) {
     NavigationRoute.PLAYLIST,
     NavigationRoute.PLAYER,
@@ -242,6 +237,11 @@ fun MainScreen(
           }
         }
       })
+
+  // Setup app-wide notification channel so we don't have to instantiate it everytime.
+  LaunchedEffect(Unit) {
+    notificationManager.createNotificationChannel(channelId = "AudibleYouTubeChannel", context)
+  }
 }
 
 @Composable
@@ -362,7 +362,6 @@ fun MainNavHost(
           currentSongPlaying = currentSongPlaying,
           currentSongCover = currentSongCover,
           currentSongDuration = currentSongDuration,
-          mediaPlayer = mediaPlayer,
           onLaunch = { mainViewModel.updateCurrentSongDuration(it) },
           onPlayClick = {
             when (playButtonState) {
@@ -430,7 +429,8 @@ fun MainNavHost(
 
             mainViewModel.updateCurrentSongDuration(mediaPlayer.duration.toFloat())
           },
-          onArrowDownClick = { navController.popBackStack() })
+          onArrowDownClick = { navController.popBackStack() },
+          mediaPlayer = mediaPlayer)
     }
   }
 }
