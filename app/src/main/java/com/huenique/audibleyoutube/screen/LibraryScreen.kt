@@ -158,6 +158,8 @@ fun Playlist(
             songTitle = song.key
           })
     }
+
+    Box(modifier = Modifier.height(80.dp)) {}
   }
 
   when (moreActionState) {
