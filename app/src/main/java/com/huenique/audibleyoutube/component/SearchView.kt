@@ -173,7 +173,7 @@ fun ResultContent(
           AsyncImage(
               model = thumbnail,
               contentDescription = "Search result thumbnail",
-              contentScale = ContentScale.Crop)
+              contentScale = ContentScale.Fit)
         }
 
         Column(modifier = Modifier.padding(start = 6.dp).weight(1f).fillMaxHeight()) {
