@@ -53,7 +53,7 @@ fun MainTopAppBar(
 
         // Reset repos to prevent memory hogging
         viewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.INTERRUPTED)
-        httpResponseRepository.update(value = "{}")
+        httpResponseRepository.updateContent(value = "{}")
       },
       onSearchClicked = {
         viewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.DISPLAYED)
@@ -62,10 +62,8 @@ fun MainTopAppBar(
         audibleYoutube.searchVideo(
             query = it,
             responseRepo = httpResponseRepository,
-            callbackFn = {
-              httpResponseHandler.onHttpError(
-                  viewModel, httpResponseRepoState, httpResponseRepository)
-            })
+            onError = { viewModel.updateSuccessResponseState(newValue = false) },
+            callbackFn = { httpResponseHandler.onHttpError(viewModel, httpResponseRepoState) })
       },
       onSearchTriggered = {
         viewModel.updateSearchWidgetState(newValue = SearchWidgetState.OPENED)

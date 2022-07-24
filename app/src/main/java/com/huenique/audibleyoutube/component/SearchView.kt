@@ -33,9 +33,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
-import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 @Composable
 fun SearchView(
@@ -110,7 +110,7 @@ fun VariableContent(
       modifier = Modifier.verticalScroll(rememberScrollState()),
       verticalArrangement = Arrangement.Top,
       horizontalAlignment = Alignment.CenterHorizontally) {
-    val result = searchResultRepo.getAll()
+    val result = searchResultRepo.getContent()
     val json =
         try {
           JSONObject(result)
@@ -132,10 +132,12 @@ fun VariableContent(
 
 @Composable
 fun ErrorContent(message: String) {
-  Column(horizontalAlignment = Alignment.Start) {
+  Column(
+      modifier = Modifier.padding(start = 14.dp, end = 14.dp),
+      horizontalAlignment = Alignment.Start) {
     Text(text = "Oops! Something went wrong. Please try again.", fontWeight = FontWeight.Bold)
     Text(
-        text = if (message == "{}") "\nMessage: Screen Reset" else message,
+        text = if (message == "{}") "\nReason: Service Unavailable" else message,
         color = MaterialTheme.colors.error)
     Divider(modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
     Text(text = "Other things you can do:", textDecoration = TextDecoration.Underline)
@@ -153,52 +155,61 @@ fun ResultContent(
     moreActionState: SnapshotStateMap<String, String>,
     onClickMoreAction: () -> Unit
 ) {
-  // For the response structure, see
+  // For the response structure, see:
   // https://audible-youtube.herokuapp.com/docs#/videos/Search_search_get
   val playlist = json.getJSONArray("playlist")
   val results = playlist.getJSONObject(0).getJSONArray("result")
 
-  for (resultIndex in 0 until results.length()) {
-    val result = results.getJSONObject(resultIndex)
+  // TODO: Remove this temp fix later.
+  // https://github.com/huenique/audible-youtube/issues/8
+  if (results.length() == 0) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+      Box(modifier = Modifier.height(56.dp)) {}
+      Text(text = "No matching result!")
+    }
+  } else {
+    for (resultIndex in 0 until results.length()) {
+      val result = results.getJSONObject(resultIndex)
 
-    val videoTitle = result.getString("title")
-    val videoLink = result.getString("link")
-    val viewCount = result.getJSONObject("viewCount").getString("short")
-    val channelName = result.getJSONObject("channel").getString("name")
-    val thumbnail = result.getJSONArray("thumbnails").getJSONObject(0).getString("url")
+      val videoTitle = result.getString("title")
+      val videoLink = result.getString("link")
+      val viewCount = result.getJSONObject("viewCount").getString("short")
+      val channelName = result.getJSONObject("channel").getString("name")
+      val thumbnail = result.getJSONArray("thumbnails").getJSONObject(0).getString("url")
 
-    Card(modifier = Modifier.fillMaxWidth().heightIn(0.dp, 100.dp).padding(top = 10.dp)) {
-      Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.width(130.dp)) {
-          AsyncImage(
-              model = thumbnail,
-              contentDescription = "Search result thumbnail",
-              contentScale = ContentScale.Fit)
-        }
+      Card(modifier = Modifier.fillMaxWidth().heightIn(0.dp, 100.dp).padding(top = 10.dp)) {
+        Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
+          Box(modifier = Modifier.width(130.dp)) {
+            AsyncImage(
+                model = thumbnail,
+                contentDescription = "Search result thumbnail",
+                contentScale = ContentScale.Fit)
+          }
 
-        Column(modifier = Modifier.padding(start = 6.dp).weight(1f).fillMaxHeight()) {
-          Text(
-              text = videoTitle,
-              fontSize = 14.sp,
-              fontWeight = FontWeight.Bold,
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 2)
+          Column(modifier = Modifier.padding(start = 6.dp).weight(1f).fillMaxHeight()) {
+            Text(
+                text = videoTitle,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2)
 
-          Text(channelName, fontSize = 12.sp)
-          Text(viewCount, fontSize = 12.sp)
-        }
+            Text(channelName, fontSize = 12.sp)
+            Text(viewCount, fontSize = 12.sp)
+          }
 
-        IconButton(
-            onClick = {
-              moreActionState["videoLink"] = videoLink
-              moreActionState["videoTitle"] = videoTitle
-              moreActionState["thumbnail"] = thumbnail
-              onClickMoreAction()
-            }) {
-          Icon(
-              imageVector = Icons.Rounded.MoreVert,
-              modifier = Modifier.size(24.dp),
-              contentDescription = "More Action")
+          IconButton(
+              onClick = {
+                moreActionState["videoLink"] = videoLink
+                moreActionState["videoTitle"] = videoTitle
+                moreActionState["thumbnail"] = thumbnail
+                onClickMoreAction()
+              }) {
+            Icon(
+                imageVector = Icons.Rounded.MoreVert,
+                modifier = Modifier.size(24.dp),
+                contentDescription = "More Action")
+          }
         }
       }
     }

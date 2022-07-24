@@ -25,11 +25,11 @@ import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.*
 import com.huenique.audibleyoutube.utils.*
-import java.io.File
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -99,7 +99,7 @@ fun MainScreen(
     }
   }
 
-  // Avoid "Screen Reset" error screen.
+  // Avoid "Service Unavailable" error screen on navigate.
   when (navBackStackEntry?.destination?.route) {
     NavigationRoute.PLAYLIST,
     NavigationRoute.PLAYER,
@@ -111,7 +111,7 @@ fun MainScreen(
 
       // Reset repos to prevent memory hogging
       mainViewModel.updateSearchRepoState(newValue = HttpResponseRepositoryState.INTERRUPTED)
-      httpResponseRepo.update(value = "{}")
+      httpResponseRepo.updateContent(value = "{}")
     }
   }
 

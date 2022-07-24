@@ -23,7 +23,7 @@ class AudibleYoutubeApi {
       thumbnailUrl: String,
       file: File,
       responseRepo: Repository<String>,
-      callbackFn: () -> Any,
+      onError: () -> Unit
   ) {
     val client = OkHttpClient.Builder().build()
     val request = Request.Builder().url(thumbnailUrl).build()
@@ -34,23 +34,32 @@ class AudibleYoutubeApi {
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
                 e.message?.let { errMSg ->
-                  responseRepo.update(
-                      value = "\nMessage: ${errMSg.replaceFirstChar { it.uppercaseChar() }}")
-                  callbackFn()
+                  responseRepo.updateError(value = errMSg.replaceFirstChar { it.uppercaseChar() })
+                  onError()
                 }
               }
 
               override fun onResponse(call: Call, response: Response) {
                 response.use {
                   if (!response.isSuccessful) {
-                    val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
-                    val reason =
-                        jsonContent?.let { it.getJSONArray("errors").get(0) as String } ?: ""
-                    responseRepo.update(
-                        value =
-                            "\nCode: ${response.code}" +
-                                "\nMessage: ${response.message}" +
-                                "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                    val errMessage =
+                        try {
+                          val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
+                          val reason =
+                              if (jsonContent !== null)
+                                  try {
+                                    jsonContent.getJSONArray("errors").get(0) as String
+                                  } catch (e: JSONException) {
+                                    jsonContent.getString("error")
+                                  }
+                              else ""
+                          reason.replaceFirstChar { it.uppercaseChar() }
+                        } catch (jsonErr: JSONException) {
+                          response.message
+                        }
+
+                    responseRepo.updateError(value = errMessage)
+                    onError()
                   } else {
                     val inputStream = response.body!!.byteStream()
                     val buffer = ByteArray(1024 * 4)
@@ -65,10 +74,9 @@ class AudibleYoutubeApi {
                       fos.flush()
                       fos.close()
                     } catch (e: IOException) {
-                      responseRepo.update(value = "\nMessage: $e")
+                      e.message?.let { ioErr -> responseRepo.updateError(value = ioErr) }
                     }
                   }
-                  callbackFn()
                 }
               }
             })
@@ -79,7 +87,7 @@ class AudibleYoutubeApi {
       file: File,
       responseRepo: Repository<String>,
       onFailure: () -> Unit,
-      onResponseFailure: () -> Unit,
+      onError: () -> Unit,
       context: Context? = null,
       builder: NotificationCompat.Builder? = null,
       onSinkClose: (() -> Unit)? = null
@@ -92,34 +100,34 @@ class AudibleYoutubeApi {
         .enqueue(
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
-                e.message?.let {
-                  responseRepo.update(
-                      value = "\nMessage: ${it.replaceFirstChar { it.uppercaseChar()}}")
+                e.message?.let { it: String ->
+                  responseRepo.updateError(value = it.replaceFirstChar { it.uppercaseChar() })
                 }
                 onFailure()
               }
 
               override fun onResponse(call: Call, response: Response) {
                 response.use {
+                  var errMessage = ""
                   if (!response.isSuccessful) {
-                    if (response.code == INSUFFICIENT_STORAGE) {
-                      onResponseFailure()
-                    } else {
-                      val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
-                      val reason =
-                          if (jsonContent !== null)
-                              try {
-                                jsonContent.getJSONArray("errors").get(0) as String
-                              } catch (e: JSONException) {
-                                jsonContent.getString("error")
-                              }
-                          else ""
-                      responseRepo.update(
-                          value =
-                              "\nCode: ${response.code}" +
-                                  "\nMessage: ${response.message}" +
-                                  "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
-                    }
+                    errMessage =
+                        try {
+                          val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
+                          val reason =
+                              if (jsonContent !== null)
+                                  try {
+                                    jsonContent.getJSONArray("errors").get(0) as String
+                                  } catch (e: JSONException) {
+                                    jsonContent.getString("error")
+                                  }
+                              else ""
+                          reason.replaceFirstChar { it.uppercaseChar() }
+                        } catch (jsonErr: JSONException) {
+                          response.message
+                        }
+
+                    responseRepo.updateError(value = errMessage)
+                    onError()
                   } else {
                     val respBody = response.body
                     val sourceBytes = respBody!!.source()
@@ -178,6 +186,7 @@ class AudibleYoutubeApi {
   fun searchVideo(
       query: String,
       responseRepo: Repository<String>,
+      onError: () -> Unit,
       callbackFn: () -> Any,
   ) {
     val client = OkHttpClient.Builder().connectTimeout(timeout = 30, TimeUnit.SECONDS).build()
@@ -189,26 +198,35 @@ class AudibleYoutubeApi {
             object : Callback {
               override fun onFailure(call: Call, e: IOException) {
                 e.message?.let {
-                  responseRepo.update(value = "\nMessage: $it")
+                  responseRepo.updateError(value = it)
                   callbackFn()
                 }
               }
 
               override fun onResponse(call: Call, response: Response) {
                 response.use {
+                  var errMessage = ""
                   if (!response.isSuccessful) {
-                    val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
-                    val reason =
-                        if (jsonContent !== null)
-                            jsonContent.getJSONArray("errors").get(0) as String
-                        else ""
-                    responseRepo.update(
-                        value =
-                            "\nCode: ${response.code}" +
-                                "\nMessage: ${response.message}" +
-                                "\nReason: ${reason.replaceFirstChar { it.uppercaseChar() }}")
+                    errMessage =
+                        try {
+                          val jsonContent = response.body?.string()?.let { it1 -> JSONObject(it1) }
+                          val reason =
+                              if (jsonContent !== null)
+                                  try {
+                                    jsonContent.getJSONArray("errors").get(0) as String
+                                  } catch (e: JSONException) {
+                                    jsonContent.getString("error")
+                                  }
+                              else ""
+                          reason.replaceFirstChar { it.uppercaseChar() }
+                        } catch (jsonErr: JSONException) {
+                          response.message
+                        }
+
+                    responseRepo.updateError(value = errMessage)
+                    onError()
                   } else {
-                    responseRepo.update(response.body!!.string())
+                    responseRepo.updateContent(response.body!!.string())
                   }
                   callbackFn()
                 }

@@ -46,7 +46,7 @@ fun MainVideoSearch(
 
   when (successResponseState) {
     false -> {
-      Toast.makeText(context, "The selected video is too long!", Toast.LENGTH_SHORT).show()
+      Toast.makeText(context, httpResponseRepository.getError(), Toast.LENGTH_LONG).show()
       viewModel.updateSuccessResponseState(newValue = true)
     }
   }
@@ -80,11 +80,8 @@ fun MainVideoSearch(
               query = query,
               file = mediaSource,
               responseRepo = httpResponseRepository,
-              onFailure = {
-                httpResponseHandler.onHttpError(
-                    viewModel, httpResponseRepoState, httpResponseRepository)
-              },
-              onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
+              onFailure = { httpResponseHandler.onHttpError(viewModel, httpResponseRepoState) },
+              onError = { viewModel.updateSuccessResponseState(newValue = false) },
               context = context,
               builder = builder,
               onSinkClose = {
@@ -93,7 +90,7 @@ fun MainVideoSearch(
                     thumbnailUrl = thumbnailUrl,
                     file = thumbnailFile,
                     responseRepo = httpResponseRepository,
-                    callbackFn = {},
+                    onError = { viewModel.updateSuccessResponseState(newValue = false) },
                 )
                 recentManager.addToRecentlyAdded(context = context, thumbnailFile.absolutePath)
               })
@@ -130,11 +127,8 @@ fun MainVideoSearch(
               query = query,
               file = mediaSource,
               responseRepo = httpResponseRepository,
-              onFailure = {
-                httpResponseHandler.onHttpError(
-                    viewModel, httpResponseRepoState, httpResponseRepository)
-              },
-              onResponseFailure = { viewModel.updateSuccessResponseState(newValue = false) },
+              onFailure = { httpResponseHandler.onHttpError(viewModel, httpResponseRepoState) },
+              onError = { viewModel.updateSuccessResponseState(newValue = false) },
               context = context,
               builder = builder,
               onSinkClose = {
@@ -144,7 +138,7 @@ fun MainVideoSearch(
                     thumbnailUrl = thumbnailUrl,
                     file = thumbnailFile,
                     responseRepo = httpResponseRepository,
-                    callbackFn = {},
+                    onError = { viewModel.updateSuccessResponseState(newValue = false) },
                 )
                 recentManager.addToRecentlyAdded(context = context, thumbnailFile.absolutePath)
               })
