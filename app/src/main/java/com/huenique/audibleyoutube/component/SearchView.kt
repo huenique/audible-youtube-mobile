@@ -255,10 +255,9 @@ fun ResultDialogue(
     onDownloadVideo: (String, File) -> Unit
 ) {
   val context = LocalContext.current
-  val file =
-      File(
-          context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
-          "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3")
+  val fileDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+  val fileName = "${moreActionState["videoTitle"].toString().replace("/", "")}.mp3"
+  val file = File(fileDir, fileName)
 
   val createPlaylistDxState = remember { mutableStateOf(value = false) }
   val playlistCreationState = remember { mutableStateOf(value = true) }
