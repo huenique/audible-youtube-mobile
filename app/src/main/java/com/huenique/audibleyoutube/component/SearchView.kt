@@ -33,9 +33,9 @@ import com.huenique.audibleyoutube.state.ActionRepositoryState
 import com.huenique.audibleyoutube.state.HttpResponseRepositoryState
 import com.huenique.audibleyoutube.state.PlaylistState
 import com.huenique.audibleyoutube.ui.theme.AudibleYoutubeTheme
+import java.io.File
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun SearchView(
@@ -132,10 +132,8 @@ fun VariableContent(
 
 @Composable
 fun ErrorContent(message: String) {
-  Column(
-      modifier = Modifier.padding(start = 14.dp, end = 14.dp),
-      horizontalAlignment = Alignment.Start) {
-    Text(text = "Oops! Something went wrong. Please try again.", fontWeight = FontWeight.Bold)
+  Column(horizontalAlignment = Alignment.Start) {
+    Text(text = "Oops! Please try again.", fontWeight = FontWeight.Bold)
     Text(
         text = if (message == "{}") "\nReason: Service Unavailable" else message,
         color = MaterialTheme.colors.error)
