@@ -233,4 +233,18 @@ class MusicLibraryManager {
     }
     return currImg
   }
+
+  fun getSongByThumbnail(context: Context, thumbnail: String): File {
+    val songCover = File(thumbnail).nameWithoutExtension
+
+    context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath?.let { it ->
+      File(it).walk().forEach {
+        if (it.extension == MP3 && it.nameWithoutExtension == songCover) {
+          return it
+        }
+      }
+    }
+
+    return File("")
+  }
 }

@@ -25,11 +25,11 @@ import com.huenique.audibleyoutube.screen.main.MainTopAppBar
 import com.huenique.audibleyoutube.service.AudibleYoutubeApi
 import com.huenique.audibleyoutube.state.*
 import com.huenique.audibleyoutube.utils.*
+import java.io.File
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.*
 
 object NavigationRoute {
   const val HOME = "home"
@@ -269,13 +269,14 @@ fun MainNavHost(
   NavHost(navController = navController, startDestination = NavigationRoute.HOME) {
     composable(NavigationRoute.HOME) {
       onNavigate(ScreenNavigationState.HOME)
-
       HomeScreen(
+          navHostController = navController,
           viewModel = mainViewModel,
+          mediaPlayer = mediaPlayer,
+          musicLibraryManager = musicLibraryManager,
           httpResponseRepository = httpResponseRepository,
           searchWidgetState = searchWidgetState,
           audibleYoutube = audibleYoutube,
-          musicLibraryManager = musicLibraryManager,
           recentManager = recentManager,
           httpResponseHandler = httpResponseHandler)
     }
