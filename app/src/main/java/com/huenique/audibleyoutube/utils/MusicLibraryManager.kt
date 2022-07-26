@@ -9,7 +9,6 @@ import java.io.FileReader
 import java.io.PrintWriter
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 const val MUSIC_LIBRARY_NAME = "music_library.m3u"
 
@@ -86,73 +85,71 @@ class MusicLibraryManager {
 
     // Check playlists one by one for song entry.
     // Is this slow and inefficient? The answer is yes.
-    thread {
-      for (playlist in playlists) {
-        val songs = playlist.readLines().toMutableList()
-        val songInf = mutableListOf<String>()
-        var line: String?
-        var extImg = ""
-        var songPath = ""
+    for (playlist in playlists) {
+      val songs = playlist.readLines().toMutableList()
+      val songInf = mutableListOf<String>()
+      var line: String?
+      var extImg = ""
+      var songPath = ""
 
-        songs.removeAll(listOf("", null))
+      songs.removeAll(listOf("", null))
 
-        // Remove entry from playlist.
-        BufferedReader(FileReader(playlist)).use { br ->
-          while (br.readLine().also { line = it } != null) {
-            line?.let {
+      // Remove entry from playlist.
+      BufferedReader(FileReader(playlist)).use { br ->
+        while (br.readLine().also { line = it } != null) {
+          line?.let {
 
-              // Extract entry's directives.
-              when (it.take(7)) {
-                EXTIMG -> {
-                  songInf.add(it)
-                  extImg = it.replace("$EXTIMG:", "")
-                }
-                EXTINF -> {
-                  songInf.add(it)
-                }
-                else -> {}
+            // Extract entry's directives.
+            when (it.take(7)) {
+              EXTIMG -> {
+                songInf.add(it)
+                extImg = it.replace("$EXTIMG:", "")
               }
-
-              // Extract media source path.
-              try {
-                if (it.first() == "/".single()) {
-                  songPath = it
-                  songInf.add(it)
-                }
-              } catch (e: NoSuchElementException) {
-                e.printStackTrace()
+              EXTINF -> {
+                songInf.add(it)
               }
+              else -> {}
             }
 
-            if (line?.contains(songTitle) == true) {
-              // Overwrite the current audio playlist file.
-              songs.removeAll(songInf)
-
-              val writer = PrintWriter(playlist)
-              writer.write("")
-              writer.close()
-
-              for (song in songs) {
-                playlist.appendText(song)
-                playlist.appendText("\n")
+            // Extract media source path.
+            try {
+              if (it.first() == "/".single()) {
+                songPath = it
+                songInf.add(it)
               }
-
-              // Remove song cover from recent section of the home page.
-              recentManager.removeFromRecentlyPlayed(context, extImg)
-              recentManager.removeFromRecentlyAdded(context, extImg)
-            } else {
-              songInf.clear()
-              extImg = ""
-              songPath = ""
+            } catch (e: NoSuchElementException) {
+              e.printStackTrace()
             }
+          }
+
+          if (line?.contains(songTitle) == true) {
+            // Overwrite the current audio playlist file.
+            songs.removeAll(songInf)
+
+            val writer = PrintWriter(playlist)
+            writer.write("")
+            writer.close()
+
+            for (song in songs) {
+              playlist.appendText(song)
+              playlist.appendText("\n")
+            }
+
+            // Remove song cover from recent section of the home page.
+            recentManager.removeFromRecentlyPlayed(context, extImg)
+            recentManager.removeFromRecentlyAdded(context, extImg)
+          } else {
+            songInf.clear()
+            extImg = ""
+            songPath = ""
           }
         }
       }
-
-      // Delete media source and song cover from filesystem.
-      File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), "$songTitle.mp3").delete()
-      File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "$songTitle.jpg").delete()
     }
+
+    // Delete media source and song cover from filesystem.
+    File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), "$songTitle.mp3").delete()
+    File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "$songTitle.jpg").delete()
   }
 
   fun addPlaylist(externalFilesDir: File, playlistName: String): Boolean {

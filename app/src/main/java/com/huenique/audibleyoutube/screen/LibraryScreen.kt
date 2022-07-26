@@ -135,7 +135,7 @@ fun LibrarySelection(
 fun Playlist(
     playButtonState: PlayButtonState,
     currentSongPlaying: String,
-    songs: MutableMap<String, String>,
+    currentPlaylistContent: MutableMap<String, String>,
     onSongClick: (String, String) -> Unit,
     onDeleteSong: (String) -> Unit
 ) {
@@ -147,7 +147,7 @@ fun Playlist(
           Modifier.padding(start = 14.dp, end = 14.dp).verticalScroll(rememberScrollState())) {
     Box(modifier = Modifier.height(40.dp)) {}
 
-    songs.forEach { song ->
+    currentPlaylistContent.forEach { song ->
       Song(
           title = song.key,
           currentSongPlaying = currentSongPlaying,
