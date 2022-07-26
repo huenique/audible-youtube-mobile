@@ -270,7 +270,7 @@ fun ResultDialogue(
       onCreatePlaylist = { createPlaylistDxState.value = it },
       onSelectPlaylist = { playlist: File, playlistName: String ->
         onAddToPlaylist(moreActionState["videoLink"].toString(), file, playlist)
-        if (!successResponseState) {
+        if (successResponseState) {
           Toast.makeText(context, "1 song added to $playlistName", Toast.LENGTH_SHORT).show()
         }
       },
