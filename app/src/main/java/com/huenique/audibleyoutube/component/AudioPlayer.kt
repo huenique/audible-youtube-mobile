@@ -20,9 +20,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.huenique.audibleyoutube.R
 import com.huenique.audibleyoutube.state.PlayButtonState
 import com.huenique.audibleyoutube.utils.TimeUnitConverter
+import java.io.File
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import java.io.File
 
 @Composable
 fun MaximizedPlayer(
@@ -37,9 +37,17 @@ fun MaximizedPlayer(
     onArrowDownClick: () -> Unit,
     mediaPlayer: MediaPlayer? = null
 ) {
+  var songProgress by remember { mutableStateOf(value = 0f) }
+
   val timeUnitConverter = TimeUnitConverter()
   val imgContentDesc = "Maximized song cover"
-  var songProgress by remember { mutableStateOf(value = 0f) }
+  val songDuration: Float
+
+  if (currentSongDuration < 0f) {
+    songDuration = 0f
+  } else {
+    songDuration = currentSongDuration
+  }
 
   Column(
       modifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 14.dp),
@@ -81,7 +89,7 @@ fun MaximizedPlayer(
       Text(
           text = timeUnitConverter.milliToMinSec(songProgress.toLong()),
           modifier = Modifier.weight(1f))
-      Text(text = timeUnitConverter.milliToMinSec(currentSongDuration.toLong()))
+      Text(text = timeUnitConverter.milliToMinSec(songDuration.toLong()))
     }
 
     Slider(
@@ -91,7 +99,7 @@ fun MaximizedPlayer(
           songProgress = it
           mediaPlayer?.seekTo(it.toInt())
         },
-        valueRange = 0f..currentSongDuration)
+        valueRange = 0f..songDuration)
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
       IconButton(
