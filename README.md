@@ -1,10 +1,4 @@
-<p align="center">
-    <img src="https://github.com/huenique/assets/blob/main/audible-youtube-mobile/ic_launcher.png?raw=true" alt="AYM product logo" width="200"/>
-</p>
-
-<h1 align="center">Audible YouTube Mobile</h1>
-&nbsp;
-&nbsp;
+# Audible YouTube Mobile
 
 **Audible YouTube Mobile (AYM)** is a music player that allows you to stream and download music for
 free without interruption.
